@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Project Assistant</string>
+
+    <string name="ok">Да</string>
+    <string name="cancel">Отмена</string>
+    <string name="dialog_msg">Вы уверены?</string>
+    <string name="logout">Выйти из аккаунта</string>
+    <string name="exit">Выйти из приложения</string>
+</resources>
