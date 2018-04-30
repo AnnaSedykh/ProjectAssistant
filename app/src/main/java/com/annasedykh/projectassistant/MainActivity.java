@@ -6,25 +6,24 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveClient;
 import com.google.android.gms.drive.DriveResourceClient;
-import com.google.android.gms.tasks.OnSuccessListener;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
-    private static final int REQUEST_CODE_SIGN_IN = 0;
+    public static final String LOGOUT = "logout";
+    public static final String SIGN_IN = "sign in";
+    private static final int SIGN_IN_CODE = 11;
+    private static final int LOGOUT_CODE = 22;
 
 
-    private GoogleSignInClient googleSignInClient;
     private DriveClient driveClient;
     private DriveResourceClient driveResourceClient;
 
@@ -32,46 +31,34 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        signIn();
 
-        Button logoutBtn = findViewById(R.id.logout);
-        logoutBtn.setOnClickListener(new View.OnClickListener() {
+        Intent signInIntent = new Intent(this, AuthActivity.class);
+        signInIntent.putExtra(SIGN_IN, true);
+        startActivityForResult(signInIntent, SIGN_IN_CODE);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        MenuItem item = menu.findItem(R.id.logout);
+        item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
-            public void onClick(View v) {
-                showDialog(getString(R.string.logout), getString(R.string.dialog_msg), new MainActivity.LogoutDialogListener());
+            public boolean onMenuItemClick(MenuItem item) {
+                CommonDialog.show(getString(R.string.logout), getString(R.string.dialog_msg), new MainActivity.LogoutDialogListener(), getSupportFragmentManager());
+                return true;
             }
         });
-    }
-
-
-    /**
-     * Start sign in activity.
-     */
-    private void signIn() {
-        Log.i(TAG, "Start sign in");
-        googleSignInClient = buildGoogleSignInClient();
-        startActivityForResult(googleSignInClient.getSignInIntent(), REQUEST_CODE_SIGN_IN);
-    }
-
-    /**
-     * Build a Google SignIn client.
-     */
-    private GoogleSignInClient buildGoogleSignInClient() {
-        GoogleSignInOptions signInOptions =
-                new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                        .requestScopes(Drive.SCOPE_FILE)
-                        .build();
-        return GoogleSignIn.getClient(this, signInOptions);
+        return true;
     }
 
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
-            case REQUEST_CODE_SIGN_IN:
-                Log.i(TAG, "Sign in request code");
+            case SIGN_IN_CODE:
+                Log.i(TAG, "Sign in finished");
                 if (resultCode == RESULT_OK) {
-                    Log.i(TAG, "Signed in successfully.");
+                    Log.i(TAG, "Signed in successfully");
                     GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
                     if (account != null) {
                         driveClient = Drive.getDriveClient(this, account);
@@ -79,40 +66,28 @@ public class MainActivity extends AppCompatActivity {
                                 Drive.getDriveResourceClient(this, account);
                     }
                 } else {
-                    Log.i(TAG, "Sign in failed!");
-                    showDialog(getString(R.string.exit), getString(R.string.dialog_msg), new MainActivity.ExitDialogListener());
+                    Log.i(TAG, "Sign in failed");
+                    finish();
+                }
+                break;
+            case LOGOUT_CODE:
+                Log.i(TAG, "Logout finished");
+                if (resultCode == RESULT_OK) {
+                    Log.i(TAG, "Logout successful");
+                    finish();
                 }
                 break;
         }
     }
 
-    private void logout() {
-        googleSignInClient.signOut().addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Log.i(TAG, "Logout success!");
-            }
-        });
-    }
-
-    /** Show dialog */
-    private void showDialog(String title, String message, DialogInterface.OnClickListener listener) {
-        CommonDialog dialog = new CommonDialog();
-        Bundle args = new Bundle();
-        args.putString("title", title);
-        args.putString("message", message);
-        dialog.setArguments(args);
-        dialog.setListener(listener);
-        dialog.show(getSupportFragmentManager(), "CommonDialog");
-    }
-
-    private class LogoutDialogListener implements DialogInterface.OnClickListener {
+    public class LogoutDialogListener implements DialogInterface.OnClickListener {
         @Override
         public void onClick(DialogInterface dialog, int which) {
             switch (which) {
                 case DialogInterface.BUTTON_POSITIVE:
-                    logout();
-                    finish();
+                    Intent logoutIntent = new Intent(MainActivity.this, AuthActivity.class);
+                    logoutIntent.putExtra(LOGOUT, true);
+                    startActivityForResult(logoutIntent, LOGOUT_CODE);
                     break;
                 case DialogInterface.BUTTON_NEGATIVE:
                     dialog.cancel();
@@ -120,16 +95,4 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class ExitDialogListener implements DialogInterface.OnClickListener {
-        @Override
-        public void onClick(DialogInterface dialog, int which) {
-            switch (which) {
-                case DialogInterface.BUTTON_POSITIVE:
-                    finish();
-                    break;
-                case DialogInterface.BUTTON_NEGATIVE:
-                    startActivityForResult(googleSignInClient.getSignInIntent(), REQUEST_CODE_SIGN_IN);
-            }
-        }
-    }
 }
