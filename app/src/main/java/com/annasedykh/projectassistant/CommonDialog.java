@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 
 public class CommonDialog extends DialogFragment {
@@ -36,4 +37,15 @@ public class CommonDialog extends DialogFragment {
 
         return dialog;
     }
+
+    public static void show(String title, String message, DialogInterface.OnClickListener listener, FragmentManager fragmentManager) {
+        CommonDialog dialog = new CommonDialog();
+        Bundle args = new Bundle();
+        args.putString("title", title);
+        args.putString("message", message);
+        dialog.setArguments(args);
+        dialog.setListener(listener);
+        dialog.show(fragmentManager, "CommonDialog");
+    }
+
 }
