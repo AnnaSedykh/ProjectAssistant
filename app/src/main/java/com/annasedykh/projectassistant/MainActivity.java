@@ -4,7 +4,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.ActionMode;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,18 +27,50 @@ public class MainActivity extends AppCompatActivity {
     private static final int SIGN_IN_CODE = 11;
     private static final int LOGOUT_CODE = 22;
 
+    private ViewPager viewPager;
+    private TabLayout tabLayout;
+    private MainPagerAdapter pagerAdapter = null;
+    private ActionMode actionMode = null;
 
     private DriveClient driveClient;
     private DriveResourceClient driveResourceClient;
+
+    public DriveClient getDriveClient() {
+        return driveClient;
+    }
+    public DriveResourceClient getDriveResourceClient() {
+        return driveResourceClient;
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        initToolbarAndTabs();
+
         Intent signInIntent = new Intent(this, AuthActivity.class);
         signInIntent.putExtra(SIGN_IN, true);
         startActivityForResult(signInIntent, SIGN_IN_CODE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+    }
+
+    private void initToolbarAndTabs() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle(R.string.main_screen_title);
+        setSupportActionBar(toolbar);
+
+        viewPager = findViewById(R.id.view_pager);
+        pagerAdapter = new MainPagerAdapter(getSupportFragmentManager(), this);
+        viewPager.setAdapter(pagerAdapter);
+
+        tabLayout = findViewById(R.id.tab_layout);
+        tabLayout.setupWithViewPager(viewPager);
     }
 
     @Override
