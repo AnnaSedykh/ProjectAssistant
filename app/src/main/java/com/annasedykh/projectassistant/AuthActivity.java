@@ -10,7 +10,8 @@ import android.util.Log;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.drive.Drive;
+import com.google.android.gms.common.Scopes;
+import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 public class AuthActivity extends AppCompatActivity {
@@ -24,7 +25,7 @@ public class AuthActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if(googleSignInClient == null){
+        if (googleSignInClient == null) {
             googleSignInClient = buildGoogleSignInClient();
         }
 
@@ -52,7 +53,7 @@ public class AuthActivity extends AppCompatActivity {
     private GoogleSignInClient buildGoogleSignInClient() {
         GoogleSignInOptions signInOptions =
                 new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                        .requestScopes(Drive.SCOPE_FILE)
+                        .requestScopes(new Scope(Scopes.DRIVE_FULL))
                         .build();
         return GoogleSignIn.getClient(this, signInOptions);
     }
