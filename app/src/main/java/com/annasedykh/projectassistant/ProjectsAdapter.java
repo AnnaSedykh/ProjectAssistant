@@ -9,7 +9,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.ProjectViewHolder>{
+public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.ProjectViewHolder>{
 
     private List<Project> data = new ArrayList<>();
 
@@ -40,18 +40,18 @@ class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.ProjectViewHo
     }
 
 
-
     static class ProjectViewHolder extends RecyclerView.ViewHolder{
 
-        private final TextView title;
+        private final TextView textView;
 
         public ProjectViewHolder(View itemView) {
             super(itemView);
-            title = itemView.findViewById(R.id.project_title);
+            textView = itemView.findViewById(R.id.project_title);
+
         }
 
         public void bind(final Project project, final int position) {
-            title.setText(project.title);
+            textView.setText(project.getName());
         }
     }
 }
