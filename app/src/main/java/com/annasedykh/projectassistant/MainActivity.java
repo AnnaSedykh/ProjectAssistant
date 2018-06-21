@@ -18,8 +18,6 @@ import android.widget.Toast;
 
 import com.annasedykh.projectassistant.service.ProjectService;
 import com.annasedykh.projectassistant.service.ProjectServiceImpl;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.common.Scopes;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
@@ -104,35 +102,34 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case SIGN_IN_CODE:
-                Log.i(TAG, "Sign in finished");
                 if (resultCode == RESULT_OK) {
                     Log.i(TAG, "Signed in successfully");
-                    GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-                    if (account != null) {
-                        credential = GoogleAccountCredential.usingOAuth2(this, Collections.singleton(Scopes.DRIVE_FULL));
-                        credential.setSelectedAccountName("anna.emulator@gmail.com");
-
-                        driveService = new Drive.Builder(
-                                AndroidHttp.newCompatibleTransport(),
-                                JacksonFactory.getDefaultInstance(),
-                                credential
-                        ).setApplicationName(getString(R.string.app_name))
-                                .build();
-                        projectService = new ProjectServiceImpl(driveService);
-                    }
+                    initServices();
                 } else {
                     Log.i(TAG, "Sign in failed");
                     finish();
                 }
                 break;
             case LOGOUT_CODE:
-                Log.i(TAG, "Logout finished");
                 if (resultCode == RESULT_OK) {
                     Log.i(TAG, "Logout successful");
                     finish();
                 }
                 break;
         }
+    }
+
+    private void initServices() {
+        credential = GoogleAccountCredential.usingOAuth2(this, Collections.singleton(Scopes.DRIVE_FULL));
+        credential.setSelectedAccountName(BuildConfig.APP_ACCOUNT_NAME);
+
+        driveService = new Drive.Builder(
+                AndroidHttp.newCompatibleTransport(),
+                JacksonFactory.getDefaultInstance(),
+                credential
+        ).setApplicationName(getString(R.string.app_name))
+                .build();
+        projectService = new ProjectServiceImpl(driveService);
     }
 
     public class LogoutDialogListener implements DialogInterface.OnClickListener {

@@ -14,7 +14,7 @@
             android:id="@+id/project_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:listitem="@layout/project"/>
+            tools:listitem="@layout/project_file"/>
     </android.support.v4.widget.SwipeRefreshLayout>
 
 </RelativeLayout>

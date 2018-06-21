@@ -14,10 +14,14 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField("String", "APP_ACCOUNT_NAME", "\"anna.emulator@gmail.com\"")
         }
+        debug {
+            buildConfigField("String", "APP_ACCOUNT_NAME", "\"anna.emulator@gmail.com\"")
+        }
+
     }
 }
-
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])

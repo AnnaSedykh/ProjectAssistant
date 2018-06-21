@@ -4,5 +4,5 @@ import com.annasedykh.projectassistant.ProjectsAdapter;
 
 public interface ProjectService {
 
-    void showFinishedProjects(ProjectsAdapter adapter);
+    void showFolderContent(String folderId, ProjectsAdapter projectAdapter);
 }
