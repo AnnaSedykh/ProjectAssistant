@@ -3,7 +3,7 @@ package com.annasedykh.projectassistant.service;
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 
-import com.annasedykh.projectassistant.Project;
+import com.annasedykh.projectassistant.ProjectFile;
 import com.annasedykh.projectassistant.ProjectsAdapter;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
@@ -14,27 +14,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProjectServiceImpl implements ProjectService {
-    private static final String CURRENT_FOLDER_ID = "1G8ozUR7jyP3DOiU-it2sa1_4j-EYqxUB";
-    private static final String FINISHED_FOLDER_ID = "1g1xmm-jbrVxiQZJv6myo0CMhsqILiKom";
+
     private Drive driveService;
-    private ProjectsAdapter adapter;
+    private ProjectsAdapter projectAdapter;
 
     public ProjectServiceImpl(Drive driveService) {
         this.driveService = driveService;
     }
 
+
     @Override
-    public void showFinishedProjects(ProjectsAdapter adapter) {
-        this.adapter = adapter;
-        new GetFoldersContentTask().execute(FINISHED_FOLDER_ID);
+    public void showFolderContent(String folderId, ProjectsAdapter projectAdapter) {
+        this.projectAdapter = projectAdapter;
+        new GetFoldersContentTask().execute(folderId);
     }
 
     @SuppressLint("StaticFieldLeak")
-    private class GetFoldersContentTask extends AsyncTask<String, Void, List<Project>> {
+    private class GetFoldersContentTask extends AsyncTask<String, Void, List<ProjectFile>> {
 
         @Override
-        protected List<Project> doInBackground(String... folderIds) {
-            List<Project> projects = new ArrayList<>();
+        protected List<ProjectFile> doInBackground(String... folderIds) {
+            List<ProjectFile> projects = new ArrayList<>();
             for (String folderId : folderIds) {
                 FileList result = null;
                 try {
@@ -46,7 +46,7 @@ public class ProjectServiceImpl implements ProjectService {
                 }
                 if (result != null) {
                     for (File file : result.getFiles()) {
-                        projects.add(new Project(file.getId(), file.getName()));
+                        projects.add(new ProjectFile(file.getId(), file.getName(), file.getMimeType()));
                     }
                 }
             }
@@ -54,9 +54,8 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         @Override
-        protected void onPostExecute(List<Project> projects) {
-            adapter.setData(projects);
-            adapter.notifyDataSetChanged();
+        protected void onPostExecute(List<ProjectFile> projects) {
+            projectAdapter.setData(projects);
         }
     }
 }

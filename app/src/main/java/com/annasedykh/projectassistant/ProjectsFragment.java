@@ -15,6 +15,8 @@ import android.view.ViewGroup;
 import com.annasedykh.projectassistant.service.ProjectService;
 
 public class ProjectsFragment extends Fragment {
+    private static final String CURRENT_FOLDER_ID = "1G8ozUR7jyP3DOiU-it2sa1_4j-EYqxUB";
+    private static final String FINISHED_FOLDER_ID = "1g1xmm-jbrVxiQZJv6myo0CMhsqILiKom";
     private static final String TAG = "ProjectsFragment";
     public static final String TYPE_KEY = "type";
 
@@ -37,15 +39,15 @@ public class ProjectsFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        projectAdapter = new ProjectsAdapter();
         Bundle args = getArguments();
-        type = args.getString(TYPE_KEY, Project.TYPE_UNKNOWN);
+        type = args.getString(TYPE_KEY, ProjectFile.TYPE_UNKNOWN);
 
-        if (type.equals(Project.TYPE_UNKNOWN)) {
+        if (type.equals(ProjectFile.TYPE_UNKNOWN)) {
             throw new IllegalArgumentException("Unknown type");
         }
 
         projectService = ((MainActivity) getActivity()).getProjectService();
+        projectAdapter = new ProjectsAdapter(projectService);
     }
 
     @Nullable
@@ -77,8 +79,12 @@ public class ProjectsFragment extends Fragment {
         itemAnimator.setRemoveDuration(1000);
         recycler.setItemAnimator(itemAnimator);
 
-
-        projectService.showFinishedProjects(projectAdapter);
+        switch (type){
+            case ProjectFile.TYPE_CURRENT:
+                projectService.showFolderContent(CURRENT_FOLDER_ID, projectAdapter); break;
+            case ProjectFile.TYPE_FINISHED:
+                projectService.showFolderContent(FINISHED_FOLDER_ID, projectAdapter);break;
+        }
 
     }
 

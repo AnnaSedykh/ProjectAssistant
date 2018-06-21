@@ -24,12 +24,12 @@ public class MainPagerAdapter extends FragmentPagerAdapter {
 
         switch (position) {
             case PAGE_CURRENT:
-                return ProjectsFragment.createProjectFragment(Project.TYPE_CURRENT);
+                return ProjectsFragment.createProjectFragment(ProjectFile.TYPE_CURRENT);
             case PAGE_FINISHED:
-                return ProjectsFragment.createProjectFragment(Project.TYPE_FINISHED);
+                return ProjectsFragment.createProjectFragment(ProjectFile.TYPE_FINISHED);
             case PAGE_ACCOUNTING:
 //                return BalanceFragment.createBalanceFragment();
-                return ProjectsFragment.createProjectFragment(Project.TYPE_FINISHED);
+                return ProjectsFragment.createProjectFragment(ProjectFile.TYPE_FINISHED);
             default:
                 return null;
         }
