@@ -15,10 +15,10 @@ import java.util.List;
 public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.ProjectViewHolder> {
 
     private List<ProjectFile> data = new ArrayList<>();
-    private ProjectService projectService;
+    private ProjectsFragment projectsFragment;
 
-    public ProjectsAdapter(ProjectService projectService) {
-        this.projectService = projectService;
+    public ProjectsAdapter(ProjectsFragment projectsFragment) {
+        this.projectsFragment = projectsFragment;
     }
 
     @Override
@@ -30,7 +30,7 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
     @Override
     public void onBindViewHolder(ProjectViewHolder holder, int position) {
         ProjectFile project = data.get(position);
-        holder.bind(project, position, projectService, this);
+        holder.bind(project, position, projectsFragment);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
             image = itemView.findViewById(R.id.file_image);
         }
 
-        public void bind(final ProjectFile project, final int position, final ProjectService projectService, final ProjectsAdapter projectsAdapter) {
+        public void bind(final ProjectFile project, final int position, final ProjectsFragment projectsFragment) {
             text.setText(project.getName());
 
             switch (project.getMimeType()) {
@@ -87,7 +87,8 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
                 @Override
                 public void onClick(View v) {
                     if (project.getMimeType().equals(MIME_TYPE_FOLDER)) {
-                        projectService.showFolderContent(project.getId(), projectsAdapter);
+                        ProjectService projectService = projectsFragment.getProjectService();
+                        projectService.showFolderContent(project.getId(), projectsFragment);
                     }
                 }
             });

@@ -2,9 +2,12 @@ package com.annasedykh.projectassistant.service;
 
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import com.annasedykh.projectassistant.ProjectFile;
 import com.annasedykh.projectassistant.ProjectsAdapter;
+import com.annasedykh.projectassistant.ProjectsFragment;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
@@ -16,7 +19,6 @@ import java.util.List;
 public class ProjectServiceImpl implements ProjectService {
 
     private Drive driveService;
-    private ProjectsAdapter projectAdapter;
 
     public ProjectServiceImpl(Drive driveService) {
         this.driveService = driveService;
@@ -24,13 +26,17 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     @Override
-    public void showFolderContent(String folderId, ProjectsAdapter projectAdapter) {
-        this.projectAdapter = projectAdapter;
-        new GetFoldersContentTask().execute(folderId);
+    public void showFolderContent(String folderId, ProjectsFragment fragment) {
+        new GetFoldersContentTask(fragment).execute(folderId);
     }
 
     @SuppressLint("StaticFieldLeak")
     private class GetFoldersContentTask extends AsyncTask<String, Void, List<ProjectFile>> {
+        private ProjectsFragment fragment;
+
+        public GetFoldersContentTask(ProjectsFragment fragment) {
+            this.fragment = fragment;
+        }
 
         @Override
         protected List<ProjectFile> doInBackground(String... folderIds) {
@@ -55,7 +61,10 @@ public class ProjectServiceImpl implements ProjectService {
 
         @Override
         protected void onPostExecute(List<ProjectFile> projects) {
-            projectAdapter.setData(projects);
+            ProjectsAdapter adapter = fragment.getProjectAdapter();
+            adapter.setData(projects);
+            ProgressBar progressBar = fragment.getProgressBar();
+            progressBar.setVisibility(View.GONE);
         }
     }
 }

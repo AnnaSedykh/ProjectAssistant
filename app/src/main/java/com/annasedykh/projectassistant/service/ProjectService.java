@@ -1,8 +1,8 @@
 package com.annasedykh.projectassistant.service;
 
-import com.annasedykh.projectassistant.ProjectsAdapter;
+import com.annasedykh.projectassistant.ProjectsFragment;
 
 public interface ProjectService {
 
-    void showFolderContent(String folderId, ProjectsAdapter projectAdapter);
+    void showFolderContent(String folderId, ProjectsFragment fragment);
 }
