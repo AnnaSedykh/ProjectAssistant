@@ -4,7 +4,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -13,7 +12,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
 import com.annasedykh.projectassistant.service.ProjectService;
@@ -40,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
 
     private ViewPager viewPager;
     private TabLayout tabLayout;
-    private FloatingActionButton fab;
     private MainPagerAdapter pagerAdapter = null;
     private ActionMode actionMode = null;
 
@@ -54,14 +51,6 @@ public class MainActivity extends AppCompatActivity {
         Intent signInIntent = new Intent(this, AuthActivity.class);
         signInIntent.putExtra(SIGN_IN, true);
         startActivityForResult(signInIntent, SIGN_IN_CODE);
-
-        fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-            }
-        });
     }
 
     @Override

@@ -1,16 +1,15 @@
 package com.annasedykh.projectassistant;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.annasedykh.projectassistant.service.ProjectService;
 
@@ -23,9 +22,9 @@ public class ProjectsFragment extends Fragment {
     private ProjectService projectService;
 
     private String type;
+    private ProgressBar progressBar;
     private RecyclerView recycler;
     private ProjectsAdapter projectAdapter;
-    private SwipeRefreshLayout refresh;
 
     public static ProjectsFragment createProjectFragment(String type) {
         ProjectsFragment fragment = new ProjectsFragment();
@@ -47,7 +46,7 @@ public class ProjectsFragment extends Fragment {
         }
 
         projectService = ((MainActivity) getActivity()).getProjectService();
-        projectAdapter = new ProjectsAdapter(projectService);
+        projectAdapter = new ProjectsAdapter(this);
     }
 
     @Nullable
@@ -61,31 +60,41 @@ public class ProjectsFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        progressBar = view.findViewById(R.id.progressBar);
         recycler = view.findViewById(R.id.project_list);
         recycler.setLayoutManager(new LinearLayoutManager(getContext()));
         recycler.setAdapter(projectAdapter);
+        setRecyclerAnimation();
 
-        refresh = view.findViewById(R.id.swipe_refresh);
-        refresh.setColorSchemeColors(Color.CYAN, Color.BLUE, Color.GREEN);
-        refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-//                showFilesInFolder();
-            }
-        });
+        loadProjectsData();
+    }
 
+    private void loadProjectsData() {
+        switch (type){
+            case ProjectFile.TYPE_CURRENT:
+                projectService.showFolderContent(CURRENT_FOLDER_ID, this); break;
+            case ProjectFile.TYPE_FINISHED:
+                projectService.showFolderContent(FINISHED_FOLDER_ID, this);break;
+        }
+    }
+
+    private void setRecyclerAnimation() {
         RecyclerView.ItemAnimator itemAnimator = new DefaultItemAnimator();
         itemAnimator.setAddDuration(1000);
         itemAnimator.setRemoveDuration(1000);
         recycler.setItemAnimator(itemAnimator);
+    }
 
-        switch (type){
-            case ProjectFile.TYPE_CURRENT:
-                projectService.showFolderContent(CURRENT_FOLDER_ID, projectAdapter); break;
-            case ProjectFile.TYPE_FINISHED:
-                projectService.showFolderContent(FINISHED_FOLDER_ID, projectAdapter);break;
-        }
+    public ProgressBar getProgressBar() {
+        return progressBar;
+    }
 
+    public ProjectsAdapter getProjectAdapter() {
+        return projectAdapter;
+    }
+
+    public ProjectService getProjectService() {
+        return projectService;
     }
 
 }
