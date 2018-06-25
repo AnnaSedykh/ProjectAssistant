@@ -1,6 +1,13 @@
 package com.annasedykh.projectassistant;
 
-public class ProjectFile {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class ProjectFile implements Parcelable{
+    public static final String PROJECT = "project";
+    public static final String PHOTO_RU = "фото";
+    public static final String PHOTO_EN = "photo";
+
     public static final String TYPE_CURRENT = "0";
     public static final String TYPE_FINISHED = "1";
     public static final String TYPE_UNKNOWN = "-1";
@@ -39,4 +46,34 @@ public class ProjectFile {
     public void setMimeType(String mimeType) {
         this.mimeType = mimeType;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeString(name);
+        dest.writeString(mimeType);
+    }
+
+    protected ProjectFile(Parcel in) {
+        id = in.readString();
+        name = in.readString();
+        mimeType = in.readString();
+    }
+
+    public static final Creator<ProjectFile> CREATOR = new Creator<ProjectFile>() {
+        @Override
+        public ProjectFile createFromParcel(Parcel in) {
+            return new ProjectFile(in);
+        }
+
+        @Override
+        public ProjectFile[] newArray(int size) {
+            return new ProjectFile[size];
+        }
+    };
 }

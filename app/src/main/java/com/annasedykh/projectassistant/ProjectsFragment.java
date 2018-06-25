@@ -3,7 +3,6 @@ package com.annasedykh.projectassistant;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -45,8 +44,8 @@ public class ProjectsFragment extends Fragment {
             throw new IllegalArgumentException("Unknown type");
         }
 
-        projectService = ((MainActivity) getActivity()).getProjectService();
-        projectAdapter = new ProjectsAdapter(this);
+        projectService = ((App)getActivity().getApplication()).getProjectService();
+        projectAdapter = new ProjectsAdapter();
     }
 
     @Nullable
@@ -64,7 +63,6 @@ public class ProjectsFragment extends Fragment {
         recycler = view.findViewById(R.id.project_list);
         recycler.setLayoutManager(new LinearLayoutManager(getContext()));
         recycler.setAdapter(projectAdapter);
-        setRecyclerAnimation();
 
         loadProjectsData();
     }
@@ -72,29 +70,9 @@ public class ProjectsFragment extends Fragment {
     private void loadProjectsData() {
         switch (type){
             case ProjectFile.TYPE_CURRENT:
-                projectService.showFolderContent(CURRENT_FOLDER_ID, this); break;
+                projectService.showFolderContent(CURRENT_FOLDER_ID, projectAdapter, progressBar); break;
             case ProjectFile.TYPE_FINISHED:
-                projectService.showFolderContent(FINISHED_FOLDER_ID, this);break;
+                projectService.showFolderContent(FINISHED_FOLDER_ID, projectAdapter, progressBar);break;
         }
     }
-
-    private void setRecyclerAnimation() {
-        RecyclerView.ItemAnimator itemAnimator = new DefaultItemAnimator();
-        itemAnimator.setAddDuration(1000);
-        itemAnimator.setRemoveDuration(1000);
-        recycler.setItemAnimator(itemAnimator);
-    }
-
-    public ProgressBar getProgressBar() {
-        return progressBar;
-    }
-
-    public ProjectsAdapter getProjectAdapter() {
-        return projectAdapter;
-    }
-
-    public ProjectService getProjectService() {
-        return projectService;
-    }
-
 }

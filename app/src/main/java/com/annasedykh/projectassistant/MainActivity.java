@@ -14,16 +14,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.annasedykh.projectassistant.service.ProjectService;
-import com.annasedykh.projectassistant.service.ProjectServiceImpl;
-import com.google.android.gms.common.Scopes;
-import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.services.drive.Drive;
-
-import java.util.Collections;
-
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
@@ -31,10 +21,6 @@ public class MainActivity extends AppCompatActivity {
     public static final String SIGN_IN = "sign in";
     private static final int SIGN_IN_CODE = 1;
     private static final int LOGOUT_CODE = 2;
-
-    private GoogleAccountCredential credential;
-    private Drive driveService;
-    private ProjectService projectService;
 
     private ViewPager viewPager;
     private TabLayout tabLayout;
@@ -93,7 +79,6 @@ public class MainActivity extends AppCompatActivity {
             case SIGN_IN_CODE:
                 if (resultCode == RESULT_OK) {
                     Log.i(TAG, "Signed in successfully");
-                    initServices();
                 } else {
                     Log.i(TAG, "Sign in failed");
                     finish();
@@ -106,19 +91,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
         }
-    }
-
-    private void initServices() {
-        credential = GoogleAccountCredential.usingOAuth2(this, Collections.singleton(Scopes.DRIVE_FULL));
-        credential.setSelectedAccountName(BuildConfig.APP_ACCOUNT_NAME);
-
-        driveService = new Drive.Builder(
-                AndroidHttp.newCompatibleTransport(),
-                JacksonFactory.getDefaultInstance(),
-                credential
-        ).setApplicationName(getString(R.string.app_name))
-                .build();
-        projectService = new ProjectServiceImpl(driveService);
     }
 
     public class LogoutDialogListener implements DialogInterface.OnClickListener {
@@ -138,17 +110,5 @@ public class MainActivity extends AppCompatActivity {
 
     private void showMessage(String message) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-    }
-
-    public GoogleAccountCredential getCredential() {
-        return credential;
-    }
-
-    public Drive getDriveService() {
-        return driveService;
-    }
-
-    public ProjectService getProjectService() {
-        return projectService;
     }
 }
