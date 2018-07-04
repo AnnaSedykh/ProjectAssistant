@@ -8,6 +8,9 @@ public class ProjectFile implements Parcelable{
     public static final String PHOTO_RU = "фото";
     public static final String PHOTO_EN = "photo";
 
+    public static final String PHOTO_VIEW = "photo";
+    public static final String LIST_VIEW = "list";
+
     public static final String TYPE_CURRENT = "0";
     public static final String TYPE_FINISHED = "1";
     public static final String TYPE_UNKNOWN = "-1";

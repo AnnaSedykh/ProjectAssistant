@@ -1,10 +1,11 @@
 package com.annasedykh.projectassistant.service;
 
-import android.widget.ProgressBar;
+import com.annasedykh.projectassistant.ProjectFile;
 
-import com.annasedykh.projectassistant.ProjectsAdapter;
+import java.util.List;
 
 public interface ProjectService {
 
-    void showFolderContent(String folderId, ProjectsAdapter adapter, ProgressBar progressBar);
+    List<ProjectFile> getFilesFromFolder(String folderId);
+    byte[] getFileAsByteArray(String fileId);
 }
