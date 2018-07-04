@@ -44,8 +44,8 @@ public class ProjectsFragment extends Fragment {
             throw new IllegalArgumentException("Unknown type");
         }
 
-        projectService = ((App)getActivity().getApplication()).getProjectService();
-        projectAdapter = new ProjectsAdapter();
+        projectService = ((App) getActivity().getApplication()).getProjectService();
+        projectAdapter = new ProjectsAdapter(projectService);
     }
 
     @Nullable
@@ -68,11 +68,12 @@ public class ProjectsFragment extends Fragment {
     }
 
     private void loadProjectsData() {
-        switch (type){
+        switch (type) {
             case ProjectFile.TYPE_CURRENT:
-                projectService.showFolderContent(CURRENT_FOLDER_ID, projectAdapter, progressBar); break;
+                projectAdapter.showFilesInFolder(CURRENT_FOLDER_ID, ProjectFile.LIST_VIEW, progressBar);
+                break;
             case ProjectFile.TYPE_FINISHED:
-                projectService.showFolderContent(FINISHED_FOLDER_ID, projectAdapter, progressBar);break;
+                projectAdapter.showFilesInFolder(FINISHED_FOLDER_ID, ProjectFile.LIST_VIEW, progressBar);
         }
     }
 }

@@ -32,9 +32,9 @@ public class AuthActivity extends AppCompatActivity {
         boolean isLogoutIntent = getIntent().getBooleanExtra(MainActivity.LOGOUT, false);
         boolean isSigninIntent = getIntent().getBooleanExtra(MainActivity.SIGN_IN, false);
 
-        if(isLogoutIntent){
+        if (isLogoutIntent) {
             logout();
-        } else if(isSigninIntent){
+        } else if (isSigninIntent) {
             signIn();
         }
     }

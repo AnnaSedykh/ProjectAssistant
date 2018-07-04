@@ -2,7 +2,7 @@ package com.annasedykh.projectassistant;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -12,10 +12,11 @@ import android.widget.ProgressBar;
 import com.annasedykh.projectassistant.service.ProjectService;
 
 public class ProjectActivity extends AppCompatActivity {
+    public static final int COLUMN_NUMBER = 3;
 
     private ProjectService projectService;
-
     private ProjectFile project;
+    private String dataViewType;
     private Toolbar toolbar;
     private ProgressBar progressBar;
     private RecyclerView recycler;
@@ -24,33 +25,39 @@ public class ProjectActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_project);
+
+        projectService = ((App) getApplication()).getProjectService();
+        project = getIntent().getParcelableExtra(ProjectFile.PROJECT);
+        dataViewType = getIntent().getStringExtra("dataViewType");
+
+        switch (dataViewType) {
+            case ProjectFile.PHOTO_VIEW:
+                setContentView(R.layout.activity_photo);
+                break;
+            case ProjectFile.LIST_VIEW:
+                setContentView(R.layout.activity_list);
+        }
+
         toolbar = findViewById(R.id.toolbar);
         progressBar = findViewById(R.id.progressBar);
-        recycler = findViewById(R.id.project_files);
+        recycler = findViewById(R.id.recycler);
 
-        adapter = new ProjectsAdapter();
-        recycler.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new ProjectsAdapter(projectService);
         recycler.setAdapter(adapter);
-
-        project = getIntent().getParcelableExtra(ProjectFile.PROJECT);
-        projectService = ((App) getApplication()).getProjectService();
-
-        setRecyclerAnimation();
+        switch (dataViewType) {
+            case ProjectFile.PHOTO_VIEW:
+                recycler.setLayoutManager(new GridLayoutManager(this, COLUMN_NUMBER));
+                break;
+            case ProjectFile.LIST_VIEW:
+                recycler.setLayoutManager(new LinearLayoutManager(this));
+        }
 
         if (project != null) {
             toolbar.setTitle(project.getName());
             setSupportActionBar(toolbar);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            projectService.showFolderContent(project.getId(), adapter, progressBar);
+            adapter.showFilesInFolder(project.getId(), dataViewType, progressBar);
         }
-    }
-
-    private void setRecyclerAnimation() {
-        RecyclerView.ItemAnimator itemAnimator = new DefaultItemAnimator();
-        itemAnimator.setAddDuration(1000);
-        itemAnimator.setRemoveDuration(1000);
-        recycler.setItemAnimator(itemAnimator);
     }
 
     @Override
