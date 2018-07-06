@@ -66,6 +66,11 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
         notifyDataSetChanged();
     }
 
+    public void addProjectFile(ProjectFile projectFile){
+        data.add(projectFile);
+        notifyItemInserted(data.size());
+    }
+
     public void showFilesInFolder(String folderId, String dataViewType, ProgressBar progressBar) {
         this.dataViewType = dataViewType;
         new ShowFilesInFolderTask(this, progressBar, folderId).execute();
