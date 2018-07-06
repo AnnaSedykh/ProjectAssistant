@@ -3,7 +3,9 @@ package com.annasedykh.projectassistant;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class ProjectFile implements Parcelable{
+import java.util.Comparator;
+
+public class ProjectFile implements Parcelable {
     public static final String PROJECT = "project";
     public static final String PHOTO_RU = "фото";
     public static final String PHOTO_EN = "photo";
@@ -79,4 +81,20 @@ public class ProjectFile implements Parcelable{
             return new ProjectFile[size];
         }
     };
+
+    public static class SortedByFolderAndName implements Comparator<ProjectFile> {
+        private static final String FOLDER = "folder";
+
+        @Override
+        public int compare(ProjectFile o1, ProjectFile o2) {
+            if (!o1.mimeType.equals(o2.mimeType)) {
+                if (o1.mimeType.contains(FOLDER)) {
+                    return -1;
+                } else if (o2.mimeType.contains(FOLDER)) {
+                    return 1;
+                }
+            }
+            return o1.name.compareTo(o2.name);
+        }
+    }
 }

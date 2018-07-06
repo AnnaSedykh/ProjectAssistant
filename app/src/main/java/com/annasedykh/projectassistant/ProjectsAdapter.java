@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -59,6 +60,9 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
 
     public void setData(List<ProjectFile> data) {
         this.data = data;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            data.sort(new ProjectFile.SortedByFolderAndName());
+        }
         notifyDataSetChanged();
     }
 
