@@ -14,6 +14,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ProgressBar;
@@ -29,6 +30,7 @@ import java.util.Date;
 import java.util.List;
 
 public class ProjectActivity extends AppCompatActivity {
+    private static final String TAG = "ProjectActivity";
     public static final int COLUMN_NUMBER = 3;
     private static final int REQUEST_TAKE_PHOTO = 1;
     private static final String AUTHORITY = "com.annasedykh.projectassistant.fileprovider";
@@ -179,10 +181,23 @@ public class ProjectActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(File file) {
-            if(file != null){
+            if (file != null) {
                 ProjectFile projectFile = new ProjectFile(file.getId(), photoFile.getName(), getString(R.string.mime_type_jpeg));
                 adapter.addProjectFile(projectFile);
             }
+            deleteLocalImageFile(photoFile);
         }
+    }
+
+    private void deleteLocalImageFile(java.io.File photoFile) {
+        if (photoFile.exists()) {
+            String filePath = photoFile.getPath();
+            if (photoFile.delete()) {
+                Log.i(TAG, "deleteLocalImageFile: File was deleted: " + filePath);
+            }else {
+                Log.e(TAG, "deleteLocalImageFile: File was not deleted: " + filePath);
+            }
+        }
+
     }
 }
