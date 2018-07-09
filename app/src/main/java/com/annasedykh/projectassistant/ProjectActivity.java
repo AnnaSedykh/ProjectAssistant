@@ -1,13 +1,19 @@
 package com.annasedykh.projectassistant;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -18,6 +24,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.annasedykh.projectassistant.service.ProjectService;
 import com.google.api.client.http.FileContent;
@@ -33,6 +40,9 @@ public class ProjectActivity extends AppCompatActivity {
     private static final String TAG = "ProjectActivity";
     public static final int COLUMN_NUMBER = 3;
     private static final int REQUEST_TAKE_PHOTO = 1;
+    private static final int REQUEST_IMAGE_FROM_GALLERY = 2;
+    private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 11;
+    private static final int MY_PERMISSIONS_REQUEST_CAMERA = 22;
     private static final String AUTHORITY = "com.annasedykh.projectassistant.fileprovider";
     private java.io.File photoFile;
 
@@ -95,19 +105,19 @@ public class ProjectActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         if (dataViewType.equals(ProjectFile.PHOTO_VIEW)) {
             getMenuInflater().inflate(R.menu.photo_menu, menu);
-            MenuItem takePhoto = menu.findItem(R.id.take_photo);
-            takePhoto.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            MenuItem takePhotoItem = menu.findItem(R.id.take_photo);
+            takePhotoItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
-                    takePhotoIntent();
+                    takePhoto();
                     return true;
                 }
             });
-            MenuItem loadFromGallery = menu.findItem(R.id.load_from_gallery);
-            loadFromGallery.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            final MenuItem loadFromGalleryItem = menu.findItem(R.id.load_from_gallery);
+            loadFromGalleryItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
-//                    CommonDialog.show(getString(R.string.logout), getString(R.string.dialog_msg), new MainActivity.LogoutDialogListener(), getSupportFragmentManager());
+                    loadFromGallery();
                     return true;
                 }
             });
@@ -116,33 +126,97 @@ public class ProjectActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
-            File fileMetadata = new File();
-            fileMetadata.setName(photoFile.getName());
-            List<String> parents = new ArrayList<>();
-            parents.add(project.getId());
-            fileMetadata.setParents(parents);
-            FileContent mediaContent = new FileContent(getString(R.string.mime_type_jpeg), photoFile);
-            createFileOnDrive(fileMetadata, mediaContent);
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    loadFromGallery();
+                } else {
+                    showMessage(getString(R.string.permission_storage_denied));
+                }
+                break;
+            case MY_PERMISSIONS_REQUEST_CAMERA:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    takePhoto();
+                } else {
+                    showMessage(getString(R.string.permission_camera_denied));
+                }
         }
     }
 
-    private void takePhotoIntent() {
-        Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)
-                && takePhotoIntent.resolveActivity(getPackageManager()) != null) {
-            try {
-                photoFile = createImageFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if (photoFile != null) {
-                Uri photoURI = FileProvider.getUriForFile(this,
-                        AUTHORITY,
-                        photoFile);
-                takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                startActivityForResult(takePhotoIntent, REQUEST_TAKE_PHOTO);
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_TAKE_PHOTO:
+                if (resultCode == RESULT_OK) {
+                    createFileOnDrive(true);
+                }
+                break;
+            case REQUEST_IMAGE_FROM_GALLERY:
+                if (resultCode == RESULT_OK) {
+                    if (data != null && data.getData() != null) {
+                        Uri photoUri = data.getData();
+                        String realPath = getRealPathFromURI(this, photoUri);
+                       photoFile = new java.io.File(realPath);
+
+                    }
+                    createFileOnDrive(false);
+                }
+        }
+    }
+
+    private void loadFromGallery() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+        } else {
+            Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            intent.setType("image/*");
+            startActivityForResult(intent, REQUEST_IMAGE_FROM_GALLERY);
+        }
+    }
+
+    private static String getRealPathFromURI(Context context, Uri uri) {
+        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+        Cursor cursor = context.getContentResolver().query(uri, filePathColumn, null, null, null);
+        cursor.moveToFirst();
+
+        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+        String filePath = cursor.getString(columnIndex);
+        cursor.close();
+        return filePath;
+    }
+
+    private void takePhoto() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA},
+                    MY_PERMISSIONS_REQUEST_CAMERA);
+        } else {
+            Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)
+                    && takePhotoIntent.resolveActivity(getPackageManager()) != null) {
+                try {
+                    photoFile = createImageFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (photoFile != null) {
+                    Uri photoURI = FileProvider.getUriForFile(this,
+                            AUTHORITY,
+                            photoFile);
+                    takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                    startActivityForResult(takePhotoIntent, REQUEST_TAKE_PHOTO);
+                }
             }
         }
     }
@@ -150,7 +224,7 @@ public class ProjectActivity extends AppCompatActivity {
     private java.io.File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = DateFormat.getDateTimeInstance().format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
+        String imageFileName = "IMG_" + timeStamp + "_";
         java.io.File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         java.io.File photoFile = java.io.File.createTempFile(
                 imageFileName,  /* prefix */
@@ -160,18 +234,30 @@ public class ProjectActivity extends AppCompatActivity {
         return photoFile;
     }
 
-    public void createFileOnDrive(File fileMetadata, FileContent mediaContent) {
-        new CreateFileTask(fileMetadata, mediaContent).execute();
+    private void createFileOnDrive(boolean deleteAfterLoad) {
+        File fileMetadata = new File();
+        fileMetadata.setName(photoFile.getName());
+        List<String> parents = new ArrayList<>();
+        parents.add(project.getId());
+        fileMetadata.setParents(parents);
+        FileContent mediaContent = new FileContent(getString(R.string.mime_type_jpeg), photoFile);
+        new CreateFileTask(fileMetadata, mediaContent, deleteAfterLoad).execute();
+    }
+
+    private void showMessage(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
     @SuppressLint("StaticFieldLeak")
     private class CreateFileTask extends AsyncTask<Void, Void, File> {
         private File fileMetadata;
         private FileContent mediaContent;
+        private boolean deleteAfterLoad;
 
-        public CreateFileTask(File fileMetadata, FileContent mediaContent) {
+        public CreateFileTask(File fileMetadata, FileContent mediaContent, boolean deleteAfterLoad) {
             this.fileMetadata = fileMetadata;
             this.mediaContent = mediaContent;
+            this.deleteAfterLoad = deleteAfterLoad;
         }
 
         @Override
@@ -185,7 +271,9 @@ public class ProjectActivity extends AppCompatActivity {
                 ProjectFile projectFile = new ProjectFile(file.getId(), photoFile.getName(), getString(R.string.mime_type_jpeg));
                 adapter.addProjectFile(projectFile);
             }
-            deleteLocalImageFile(photoFile);
+            if (deleteAfterLoad) {
+                deleteLocalImageFile(photoFile);
+            }
         }
     }
 
@@ -194,7 +282,7 @@ public class ProjectActivity extends AppCompatActivity {
             String filePath = photoFile.getPath();
             if (photoFile.delete()) {
                 Log.i(TAG, "deleteLocalImageFile: File was deleted: " + filePath);
-            }else {
+            } else {
                 Log.e(TAG, "deleteLocalImageFile: File was not deleted: " + filePath);
             }
         }
