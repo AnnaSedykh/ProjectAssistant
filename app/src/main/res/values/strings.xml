@@ -10,6 +10,8 @@
     <string name="take_photo">Сделать фото</string>
     <string name="load_from_gallery">Загрузить из галереи</string>
     <string name="mime_type_jpeg">image/jpeg</string>
+    <string name="permission_storage_denied">Вы не дали разрешение для доступа к галерее</string>
+    <string name="permission_camera_denied">Вы не дали разрешение для доступа к камере</string>
 
     <string name="tab_current">В работе</string>
     <string name="tab_finished">Завершено</string>
