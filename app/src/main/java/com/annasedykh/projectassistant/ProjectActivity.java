@@ -44,7 +44,7 @@ public class ProjectActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 11;
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 22;
     private static final String AUTHORITY = "com.annasedykh.projectassistant.fileprovider";
-    private java.io.File photoFile;
+    private java.io.File photoFromCamera;
 
     private ProjectService projectService;
     private ProjectFile project;
@@ -151,18 +151,19 @@ public class ProjectActivity extends AppCompatActivity {
         switch (requestCode) {
             case REQUEST_TAKE_PHOTO:
                 if (resultCode == RESULT_OK) {
-                    createFileOnDrive(true);
+                    createFileOnDrive(photoFromCamera, true);
                 }
                 break;
             case REQUEST_IMAGE_FROM_GALLERY:
                 if (resultCode == RESULT_OK) {
-                    if (data != null && data.getData() != null) {
-                        Uri photoUri = data.getData();
-                        String realPath = getRealPathFromURI(this, photoUri);
-                       photoFile = new java.io.File(realPath);
-
+                    if (data != null && data.getClipData() != null) {
+                        for (int i = 0; i < data.getClipData().getItemCount(); i++) {
+                            Uri photoUri = data.getClipData().getItemAt(i).getUri();
+                            String realPath = getRealPathFromURI(this, photoUri);
+                            java.io.File photoFile = new java.io.File(realPath);
+                            createFileOnDrive(photoFile, false);
+                        }
                     }
-                    createFileOnDrive(false);
                 }
         }
     }
@@ -178,6 +179,7 @@ public class ProjectActivity extends AppCompatActivity {
         } else {
             Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             intent.setType("image/*");
+            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
             startActivityForResult(intent, REQUEST_IMAGE_FROM_GALLERY);
         }
     }
@@ -194,6 +196,10 @@ public class ProjectActivity extends AppCompatActivity {
     }
 
     private void takePhoto() {
+        Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)
+                && takePhotoIntent.resolveActivity(getPackageManager()) != null) {
+        }
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -202,21 +208,17 @@ public class ProjectActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.CAMERA},
                     MY_PERMISSIONS_REQUEST_CAMERA);
         } else {
-            Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)
-                    && takePhotoIntent.resolveActivity(getPackageManager()) != null) {
-                try {
-                    photoFile = createImageFile();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                if (photoFile != null) {
-                    Uri photoURI = FileProvider.getUriForFile(this,
-                            AUTHORITY,
-                            photoFile);
-                    takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                    startActivityForResult(takePhotoIntent, REQUEST_TAKE_PHOTO);
-                }
+            try {
+                photoFromCamera = createImageFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (photoFromCamera != null) {
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        AUTHORITY,
+                        photoFromCamera);
+                takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(takePhotoIntent, REQUEST_TAKE_PHOTO);
             }
         }
     }
@@ -226,22 +228,22 @@ public class ProjectActivity extends AppCompatActivity {
         String timeStamp = DateFormat.getDateTimeInstance().format(new Date());
         String imageFileName = "IMG_" + timeStamp + "_";
         java.io.File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        java.io.File photoFile = java.io.File.createTempFile(
+        java.io.File imageFile = java.io.File.createTempFile(
                 imageFileName,  /* prefix */
                 ".jpg",         /* suffix */
                 storageDir      /* directory */
         );
-        return photoFile;
+        return imageFile;
     }
 
-    private void createFileOnDrive(boolean deleteAfterLoad) {
+    private void createFileOnDrive(java.io.File photoFile, boolean deleteAfterLoad) {
         File fileMetadata = new File();
         fileMetadata.setName(photoFile.getName());
         List<String> parents = new ArrayList<>();
         parents.add(project.getId());
         fileMetadata.setParents(parents);
         FileContent mediaContent = new FileContent(getString(R.string.mime_type_jpeg), photoFile);
-        new CreateFileTask(fileMetadata, mediaContent, deleteAfterLoad).execute();
+        new CreateFileTask(fileMetadata, mediaContent, photoFile, deleteAfterLoad).execute();
     }
 
     private void showMessage(String message) {
@@ -252,11 +254,13 @@ public class ProjectActivity extends AppCompatActivity {
     private class CreateFileTask extends AsyncTask<Void, Void, File> {
         private File fileMetadata;
         private FileContent mediaContent;
+        private java.io.File photoFile;
         private boolean deleteAfterLoad;
 
-        public CreateFileTask(File fileMetadata, FileContent mediaContent, boolean deleteAfterLoad) {
+        public CreateFileTask(File fileMetadata, FileContent mediaContent, java.io.File photoFile, boolean deleteAfterLoad) {
             this.fileMetadata = fileMetadata;
             this.mediaContent = mediaContent;
+            this.photoFile = photoFile;
             this.deleteAfterLoad = deleteAfterLoad;
         }
 
