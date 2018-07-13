@@ -36,6 +36,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class ProjectActivity extends AppCompatActivity {
     private static final String TAG = "ProjectActivity";
     public static final int COLUMN_NUMBER = 3;
@@ -43,16 +46,19 @@ public class ProjectActivity extends AppCompatActivity {
     private static final int REQUEST_IMAGE_FROM_GALLERY = 2;
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 11;
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 22;
-    private static final String AUTHORITY = "com.annasedykh.projectassistant.fileprovider";
     private java.io.File photoFromCamera;
 
     private ProjectService projectService;
     private ProjectFile project;
     private String dataViewType;
-    private Toolbar toolbar;
-    private ProgressBar progressBar;
-    private RecyclerView recycler;
     private ProjectsAdapter adapter;
+
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
+    @BindView(R.id.progressBar)
+    ProgressBar progressBar;
+    @BindView(R.id.recycler)
+    RecyclerView recycler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,9 +76,7 @@ public class ProjectActivity extends AppCompatActivity {
                 setContentView(R.layout.activity_list);
         }
 
-        toolbar = findViewById(R.id.toolbar);
-        progressBar = findViewById(R.id.progressBar);
-        recycler = findViewById(R.id.recycler);
+        ButterKnife.bind(this);
 
         adapter = new ProjectsAdapter(projectService);
         recycler.setAdapter(adapter);
@@ -113,7 +117,7 @@ public class ProjectActivity extends AppCompatActivity {
                     return true;
                 }
             });
-            final MenuItem loadFromGalleryItem = menu.findItem(R.id.load_from_gallery);
+            MenuItem loadFromGalleryItem = menu.findItem(R.id.load_from_gallery);
             loadFromGalleryItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
@@ -199,26 +203,28 @@ public class ProjectActivity extends AppCompatActivity {
         Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)
                 && takePhotoIntent.resolveActivity(getPackageManager()) != null) {
-        }
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
 
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.CAMERA},
-                    MY_PERMISSIONS_REQUEST_CAMERA);
-        } else {
-            try {
-                photoFromCamera = createImageFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if (photoFromCamera != null) {
-                Uri photoURI = FileProvider.getUriForFile(this,
-                        AUTHORITY,
-                        photoFromCamera);
-                takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                startActivityForResult(takePhotoIntent, REQUEST_TAKE_PHOTO);
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.CAMERA)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.CAMERA},
+                        MY_PERMISSIONS_REQUEST_CAMERA);
+            } else {
+                try {
+                    photoFromCamera = createImageFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (photoFromCamera != null) {
+                    String authority = getPackageName() + ".fileprovider";
+                    Uri photoURI = FileProvider.getUriForFile(this,
+                            authority,
+                            photoFromCamera);
+                    takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                    startActivityForResult(takePhotoIntent, REQUEST_TAKE_PHOTO);
+                }
             }
         }
     }
