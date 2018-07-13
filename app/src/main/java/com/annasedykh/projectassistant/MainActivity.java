@@ -7,11 +7,13 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.view.ActionMode;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,15 +23,18 @@ public class MainActivity extends AppCompatActivity {
     private static final int SIGN_IN_CODE = 1;
     private static final int LOGOUT_CODE = 2;
 
-    private ViewPager viewPager;
-    private TabLayout tabLayout;
-    private MainPagerAdapter pagerAdapter = null;
-    private ActionMode actionMode = null;
+    @BindView(R.id.view_pager)
+    ViewPager viewPager;
+    @BindView(R.id.tab_layout)
+    TabLayout tabLayout;
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
 
         initToolbarAndTabs();
 
@@ -45,15 +50,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initToolbarAndTabs() {
-        Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle(R.string.main_screen_title);
         setSupportActionBar(toolbar);
 
-        viewPager = findViewById(R.id.view_pager);
-        pagerAdapter = new MainPagerAdapter(getSupportFragmentManager(), this);
+        MainPagerAdapter pagerAdapter = new MainPagerAdapter(getSupportFragmentManager(), this);
         viewPager.setAdapter(pagerAdapter);
-
-        tabLayout = findViewById(R.id.tab_layout);
         tabLayout.setupWithViewPager(viewPager);
     }
 

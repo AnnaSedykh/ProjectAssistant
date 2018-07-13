@@ -1,6 +1,7 @@
 package com.annasedykh.projectassistant;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,6 +13,10 @@ import android.widget.ProgressBar;
 
 import com.annasedykh.projectassistant.service.ProjectService;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
+
 public class ProjectsFragment extends Fragment {
     private static final String CURRENT_FOLDER_ID = "1G8ozUR7jyP3DOiU-it2sa1_4j-EYqxUB";
     private static final String FINISHED_FOLDER_ID = "1g1xmm-jbrVxiQZJv6myo0CMhsqILiKom";
@@ -19,11 +24,14 @@ public class ProjectsFragment extends Fragment {
     public static final String TYPE_KEY = "type";
 
     private ProjectService projectService;
-
-    private String type;
-    private ProgressBar progressBar;
-    private RecyclerView recycler;
     private ProjectsAdapter projectAdapter;
+    private String type;
+    private Unbinder unbinder;
+
+    @BindView(R.id.progressBar)
+    ProgressBar progressBar;
+    @BindView(R.id.project_list)
+    RecyclerView recycler;
 
     public static ProjectsFragment createProjectFragment(String type) {
         ProjectsFragment fragment = new ProjectsFragment();
@@ -50,21 +58,25 @@ public class ProjectsFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_projects, container, false);
+        unbinder = ButterKnife.bind(this, view);
         return view;
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        progressBar = view.findViewById(R.id.progressBar);
-        recycler = view.findViewById(R.id.project_list);
         recycler.setLayoutManager(new LinearLayoutManager(getContext()));
         recycler.setAdapter(projectAdapter);
 
         loadProjectsData();
+    }
+
+    @Override
+    public void onDestroyView() {
+        unbinder.unbind();
+        super.onDestroyView();
     }
 
     private void loadProjectsData() {

@@ -36,6 +36,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class ProjectActivity extends AppCompatActivity {
     private static final String TAG = "ProjectActivity";
     public static final int COLUMN_NUMBER = 3;
@@ -43,16 +46,19 @@ public class ProjectActivity extends AppCompatActivity {
     private static final int REQUEST_IMAGE_FROM_GALLERY = 2;
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 11;
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 22;
-    private static final String AUTHORITY = "com.annasedykh.projectassistant.fileprovider";
-    private java.io.File photoFile;
+    private java.io.File photoFromCamera;
 
     private ProjectService projectService;
     private ProjectFile project;
     private String dataViewType;
-    private Toolbar toolbar;
-    private ProgressBar progressBar;
-    private RecyclerView recycler;
     private ProjectsAdapter adapter;
+
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
+    @BindView(R.id.progressBar)
+    ProgressBar progressBar;
+    @BindView(R.id.recycler)
+    RecyclerView recycler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,9 +76,7 @@ public class ProjectActivity extends AppCompatActivity {
                 setContentView(R.layout.activity_list);
         }
 
-        toolbar = findViewById(R.id.toolbar);
-        progressBar = findViewById(R.id.progressBar);
-        recycler = findViewById(R.id.recycler);
+        ButterKnife.bind(this);
 
         adapter = new ProjectsAdapter(projectService);
         recycler.setAdapter(adapter);
@@ -113,7 +117,7 @@ public class ProjectActivity extends AppCompatActivity {
                     return true;
                 }
             });
-            final MenuItem loadFromGalleryItem = menu.findItem(R.id.load_from_gallery);
+            MenuItem loadFromGalleryItem = menu.findItem(R.id.load_from_gallery);
             loadFromGalleryItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
@@ -151,18 +155,19 @@ public class ProjectActivity extends AppCompatActivity {
         switch (requestCode) {
             case REQUEST_TAKE_PHOTO:
                 if (resultCode == RESULT_OK) {
-                    createFileOnDrive(true);
+                    createFileOnDrive(photoFromCamera, true);
                 }
                 break;
             case REQUEST_IMAGE_FROM_GALLERY:
                 if (resultCode == RESULT_OK) {
-                    if (data != null && data.getData() != null) {
-                        Uri photoUri = data.getData();
-                        String realPath = getRealPathFromURI(this, photoUri);
-                       photoFile = new java.io.File(realPath);
-
+                    if (data != null && data.getClipData() != null) {
+                        for (int i = 0; i < data.getClipData().getItemCount(); i++) {
+                            Uri photoUri = data.getClipData().getItemAt(i).getUri();
+                            String realPath = getRealPathFromURI(this, photoUri);
+                            java.io.File photoFile = new java.io.File(realPath);
+                            createFileOnDrive(photoFile, false);
+                        }
                     }
-                    createFileOnDrive(false);
                 }
         }
     }
@@ -178,6 +183,7 @@ public class ProjectActivity extends AppCompatActivity {
         } else {
             Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             intent.setType("image/*");
+            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
             startActivityForResult(intent, REQUEST_IMAGE_FROM_GALLERY);
         }
     }
@@ -194,26 +200,28 @@ public class ProjectActivity extends AppCompatActivity {
     }
 
     private void takePhoto() {
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
+        Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)
+                && takePhotoIntent.resolveActivity(getPackageManager()) != null) {
 
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.CAMERA},
-                    MY_PERMISSIONS_REQUEST_CAMERA);
-        } else {
-            Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)
-                    && takePhotoIntent.resolveActivity(getPackageManager()) != null) {
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.CAMERA)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.CAMERA},
+                        MY_PERMISSIONS_REQUEST_CAMERA);
+            } else {
                 try {
-                    photoFile = createImageFile();
+                    photoFromCamera = createImageFile();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                if (photoFile != null) {
+                if (photoFromCamera != null) {
+                    String authority = getPackageName() + ".fileprovider";
                     Uri photoURI = FileProvider.getUriForFile(this,
-                            AUTHORITY,
-                            photoFile);
+                            authority,
+                            photoFromCamera);
                     takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                     startActivityForResult(takePhotoIntent, REQUEST_TAKE_PHOTO);
                 }
@@ -226,22 +234,22 @@ public class ProjectActivity extends AppCompatActivity {
         String timeStamp = DateFormat.getDateTimeInstance().format(new Date());
         String imageFileName = "IMG_" + timeStamp + "_";
         java.io.File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        java.io.File photoFile = java.io.File.createTempFile(
+        java.io.File imageFile = java.io.File.createTempFile(
                 imageFileName,  /* prefix */
                 ".jpg",         /* suffix */
                 storageDir      /* directory */
         );
-        return photoFile;
+        return imageFile;
     }
 
-    private void createFileOnDrive(boolean deleteAfterLoad) {
+    private void createFileOnDrive(java.io.File photoFile, boolean deleteAfterLoad) {
         File fileMetadata = new File();
         fileMetadata.setName(photoFile.getName());
         List<String> parents = new ArrayList<>();
         parents.add(project.getId());
         fileMetadata.setParents(parents);
         FileContent mediaContent = new FileContent(getString(R.string.mime_type_jpeg), photoFile);
-        new CreateFileTask(fileMetadata, mediaContent, deleteAfterLoad).execute();
+        new CreateFileTask(fileMetadata, mediaContent, photoFile, deleteAfterLoad).execute();
     }
 
     private void showMessage(String message) {
@@ -252,11 +260,13 @@ public class ProjectActivity extends AppCompatActivity {
     private class CreateFileTask extends AsyncTask<Void, Void, File> {
         private File fileMetadata;
         private FileContent mediaContent;
+        private java.io.File photoFile;
         private boolean deleteAfterLoad;
 
-        public CreateFileTask(File fileMetadata, FileContent mediaContent, boolean deleteAfterLoad) {
+        public CreateFileTask(File fileMetadata, FileContent mediaContent, java.io.File photoFile, boolean deleteAfterLoad) {
             this.fileMetadata = fileMetadata;
             this.mediaContent = mediaContent;
+            this.photoFile = photoFile;
             this.deleteAfterLoad = deleteAfterLoad;
         }
 
