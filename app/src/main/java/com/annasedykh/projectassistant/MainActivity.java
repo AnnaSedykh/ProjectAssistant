@@ -78,15 +78,21 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case SIGN_IN_CODE:
                 if (resultCode == RESULT_OK) {
-                    Log.i(TAG, "Signed in successfully");
+                    if(BuildConfig.DEBUG) {
+                        Log.i(TAG, "Signed in successfully");
+                    }
                 } else {
-                    Log.i(TAG, "Sign in failed");
+                    if(BuildConfig.DEBUG) {
+                        Log.i(TAG, "Sign in failed");
+                    }
                     finish();
                 }
                 break;
             case LOGOUT_CODE:
                 if (resultCode == RESULT_OK) {
-                    Log.i(TAG, "Logout successful");
+                    if(BuildConfig.DEBUG) {
+                        Log.i(TAG, "Logout successful");
+                    }
                     finish();
                 }
                 break;

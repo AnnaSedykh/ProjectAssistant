@@ -43,7 +43,9 @@ public class AuthActivity extends AppCompatActivity {
      * Start sign in activity.
      */
     private void signIn() {
-        Log.i(TAG, "Start sign in");
+        if (BuildConfig.DEBUG) {
+            Log.i(TAG, "Start sign in");
+        }
         startActivityForResult(googleSignInClient.getSignInIntent(), REQUEST_CODE_SIGN_IN);
     }
 
@@ -63,13 +65,10 @@ public class AuthActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case REQUEST_CODE_SIGN_IN:
-                Log.i(TAG, "Sign in request code");
                 if (resultCode == RESULT_OK) {
-                    Log.i(TAG, "Signed in successfully.");
                     setResult(RESULT_OK, getIntent());
                     finish();
                 } else {
-                    Log.i(TAG, "Sign in failed!");
                     CommonDialog.show(getString(R.string.exit), getString(R.string.dialog_msg), new AuthActivity.ExitDialogListener(), getSupportFragmentManager());
                 }
                 break;
@@ -77,11 +76,12 @@ public class AuthActivity extends AppCompatActivity {
     }
 
     private void logout() {
-        Log.i(TAG, "Start logout");
+        if (BuildConfig.DEBUG) {
+            Log.i(TAG, "Start logout");
+        }
         googleSignInClient.signOut().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Log.i(TAG, "Logout success!");
                 setResult(RESULT_OK, getIntent());
                 finish();
             }

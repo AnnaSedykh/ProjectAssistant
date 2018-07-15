@@ -291,9 +291,13 @@ public class ProjectActivity extends AppCompatActivity {
         if (photoFile.exists()) {
             String filePath = photoFile.getPath();
             if (photoFile.delete()) {
-                Log.i(TAG, "deleteLocalImageFile: File was deleted: " + filePath);
+                if(BuildConfig.DEBUG) {
+                    Log.i(TAG, "deleteLocalImageFile: File was deleted: " + filePath);
+                }
             } else {
-                Log.e(TAG, "deleteLocalImageFile: File was not deleted: " + filePath);
+                if(BuildConfig.DEBUG) {
+                    Log.e(TAG, "deleteLocalImageFile: File was not deleted: " + filePath);
+                }
             }
         }
 

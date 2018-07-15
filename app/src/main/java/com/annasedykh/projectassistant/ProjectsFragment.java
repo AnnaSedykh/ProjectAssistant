@@ -20,7 +20,6 @@ import butterknife.Unbinder;
 public class ProjectsFragment extends Fragment {
     private static final String CURRENT_FOLDER_ID = "1G8ozUR7jyP3DOiU-it2sa1_4j-EYqxUB";
     private static final String FINISHED_FOLDER_ID = "1g1xmm-jbrVxiQZJv6myo0CMhsqILiKom";
-    private static final String TAG = "ProjectsFragment";
     public static final String TYPE_KEY = "type";
 
     private ProjectService projectService;
