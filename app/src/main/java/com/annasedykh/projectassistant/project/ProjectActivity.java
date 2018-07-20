@@ -1,4 +1,4 @@
-package com.annasedykh.projectassistant;
+package com.annasedykh.projectassistant.project;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -26,6 +26,9 @@ import android.view.MenuItem;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.annasedykh.projectassistant.BuildConfig;
+import com.annasedykh.projectassistant.R;
+import com.annasedykh.projectassistant.app.App;
 import com.annasedykh.projectassistant.service.ProjectService;
 import com.google.api.client.http.FileContent;
 import com.google.api.services.drive.model.File;

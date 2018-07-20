@@ -4,8 +4,8 @@ import android.accounts.Account;
 import android.content.Context;
 
 import com.annasedykh.projectassistant.BuildConfig;
-import com.annasedykh.projectassistant.ProjectFile;
 import com.annasedykh.projectassistant.R;
+import com.annasedykh.projectassistant.project.ProjectFile;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.common.Scopes;

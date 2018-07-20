@@ -1,4 +1,4 @@
-package com.annasedykh.projectassistant;
+package com.annasedykh.projectassistant.project;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.annasedykh.projectassistant.R;
 import com.annasedykh.projectassistant.service.ProjectService;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;

@@ -1,4 +1,4 @@
-package com.annasedykh.projectassistant;
+package com.annasedykh.projectassistant.app;
 
 import android.app.Application;
 

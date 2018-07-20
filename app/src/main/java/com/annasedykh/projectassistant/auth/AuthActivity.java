@@ -1,4 +1,4 @@
-package com.annasedykh.projectassistant;
+package com.annasedykh.projectassistant.auth;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -7,6 +7,10 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.annasedykh.projectassistant.BuildConfig;
+import com.annasedykh.projectassistant.R;
+import com.annasedykh.projectassistant.main.CommonDialog;
+import com.annasedykh.projectassistant.main.MainActivity;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;

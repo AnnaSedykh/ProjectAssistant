@@ -1,9 +1,13 @@
-package com.annasedykh.projectassistant;
+package com.annasedykh.projectassistant.main;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+
+import com.annasedykh.projectassistant.R;
+import com.annasedykh.projectassistant.project.ProjectFile;
+import com.annasedykh.projectassistant.project.ProjectsFragment;
 
 public class MainPagerAdapter extends FragmentPagerAdapter {
 

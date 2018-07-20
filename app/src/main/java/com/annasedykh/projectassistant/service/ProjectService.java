@@ -1,6 +1,6 @@
 package com.annasedykh.projectassistant.service;
 
-import com.annasedykh.projectassistant.ProjectFile;
+import com.annasedykh.projectassistant.project.ProjectFile;
 import com.google.api.client.http.FileContent;
 import com.google.api.services.drive.model.File;
 

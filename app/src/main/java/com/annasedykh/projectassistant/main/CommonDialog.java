@@ -1,4 +1,4 @@
-package com.annasedykh.projectassistant;
+package com.annasedykh.projectassistant.main;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -7,6 +7,8 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
+
+import com.annasedykh.projectassistant.R;
 
 public class CommonDialog extends DialogFragment {
 

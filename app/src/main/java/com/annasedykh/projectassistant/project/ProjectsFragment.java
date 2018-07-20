@@ -1,4 +1,4 @@
-package com.annasedykh.projectassistant;
+package com.annasedykh.projectassistant.project;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -11,6 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
+import com.annasedykh.projectassistant.R;
+import com.annasedykh.projectassistant.app.App;
 import com.annasedykh.projectassistant.service.ProjectService;
 
 import butterknife.BindView;

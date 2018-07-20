@@ -1,4 +1,4 @@
-package com.annasedykh.projectassistant;
+package com.annasedykh.projectassistant.main;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,6 +11,10 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import com.annasedykh.projectassistant.BuildConfig;
+import com.annasedykh.projectassistant.R;
+import com.annasedykh.projectassistant.auth.AuthActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
