@@ -9,4 +9,5 @@
     <color name="colorIndicator">#ffff8d</color>
     <color name="colorInactive">#ddede8</color>
     <color name="colorActive">@android:color/white</color>
+    <color name="colorChanges">#00c853</color>
 </resources>

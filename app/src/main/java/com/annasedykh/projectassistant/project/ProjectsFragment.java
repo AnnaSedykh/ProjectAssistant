@@ -70,7 +70,11 @@ public class ProjectsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         recycler.setLayoutManager(new LinearLayoutManager(getContext()));
         recycler.setAdapter(projectAdapter);
+    }
 
+    @Override
+    public void onStart() {
+        super.onStart();
         loadProjectsData();
     }
 

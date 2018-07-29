@@ -26,13 +26,21 @@
 
         <TextView
             android:id="@+id/file_title"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:gravity="center"
+            android:gravity="center|start"
             android:padding="@dimen/offset_normal"
             android:textColor="@color/colorText"
             android:textSize="@dimen/text_normal"
+            android:layout_weight="1"
             tools:text="Футбол Красноярск" />
+
+        <ImageView
+            android:id="@+id/changes"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:padding="@dimen/offset_big"
+            android:src="@drawable/ic_changes" />
 
     </LinearLayout>
 

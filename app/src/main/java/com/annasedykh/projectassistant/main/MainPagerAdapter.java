@@ -13,7 +13,6 @@ public class MainPagerAdapter extends FragmentPagerAdapter {
 
     public static final int PAGE_CURRENT = 0;
     public static final int PAGE_FINISHED = 1;
-    public static final int PAGE_ACCOUNTING = 2;
 
     private String[] titles;
 
@@ -30,9 +29,6 @@ public class MainPagerAdapter extends FragmentPagerAdapter {
             case PAGE_CURRENT:
                 return ProjectsFragment.createProjectFragment(ProjectFile.TYPE_CURRENT);
             case PAGE_FINISHED:
-                return ProjectsFragment.createProjectFragment(ProjectFile.TYPE_FINISHED);
-            case PAGE_ACCOUNTING:
-//                return BalanceFragment.createBalanceFragment();
                 return ProjectsFragment.createProjectFragment(ProjectFile.TYPE_FINISHED);
             default:
                 return null;
