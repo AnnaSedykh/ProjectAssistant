@@ -1,4 +1,4 @@
-package com.annasedykh.projectassistant;
+package com.annasedykh.projectassistant.project;
 
 import android.os.Parcel;
 import android.os.Parcelable;

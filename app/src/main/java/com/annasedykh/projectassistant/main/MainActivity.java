@@ -1,7 +1,9 @@
-package com.annasedykh.projectassistant;
+package com.annasedykh.projectassistant.main;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
@@ -11,6 +13,12 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import com.annasedykh.projectassistant.BuildConfig;
+import com.annasedykh.projectassistant.R;
+import com.annasedykh.projectassistant.app.App;
+import com.annasedykh.projectassistant.auth.AuthActivity;
+import com.annasedykh.projectassistant.service.ProjectService;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -22,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String SIGN_IN = "sign in";
     private static final int SIGN_IN_CODE = 1;
     private static final int LOGOUT_CODE = 2;
+    private ProjectService projectService;
 
     @BindView(R.id.view_pager)
     ViewPager viewPager;
@@ -41,12 +50,13 @@ public class MainActivity extends AppCompatActivity {
         Intent signInIntent = new Intent(this, AuthActivity.class);
         signInIntent.putExtra(SIGN_IN, true);
         startActivityForResult(signInIntent, SIGN_IN_CODE);
+        projectService = ((App)getApplication()).getProjectService();
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-
+    protected void onRestart() {
+        super.onRestart();
+        new ReceiveChangesTask().execute();
     }
 
     private void initToolbarAndTabs() {
@@ -78,18 +88,33 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case SIGN_IN_CODE:
                 if (resultCode == RESULT_OK) {
-                    Log.i(TAG, "Signed in successfully");
+                    if(BuildConfig.DEBUG) {
+                        Log.i(TAG, "Signed in successfully");
+                    }
                 } else {
-                    Log.i(TAG, "Sign in failed");
+                    if(BuildConfig.DEBUG) {
+                        Log.i(TAG, "Sign in failed");
+                    }
                     finish();
                 }
                 break;
             case LOGOUT_CODE:
                 if (resultCode == RESULT_OK) {
-                    Log.i(TAG, "Logout successful");
+                    if(BuildConfig.DEBUG) {
+                        Log.i(TAG, "Logout successful");
+                    }
                     finish();
                 }
                 break;
+        }
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private class ReceiveChangesTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            projectService.receiveLastChanges();
+            return null;
         }
     }
 

@@ -1,4 +1,4 @@
-package com.annasedykh.projectassistant;
+package com.annasedykh.projectassistant.project;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -26,15 +26,20 @@ import android.view.MenuItem;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.annasedykh.projectassistant.BuildConfig;
+import com.annasedykh.projectassistant.R;
+import com.annasedykh.projectassistant.app.App;
 import com.annasedykh.projectassistant.service.ProjectService;
 import com.google.api.client.http.FileContent;
 import com.google.api.services.drive.model.File;
 
 import java.io.IOException;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -47,6 +52,7 @@ public class ProjectActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 11;
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 22;
     private java.io.File photoFromCamera;
+    private String lastViewedDate = new SimpleDateFormat("dd.MM.yyyy", Locale.US).format(new Date());
 
     private ProjectService projectService;
     private ProjectFile project;
@@ -93,6 +99,15 @@ public class ProjectActivity extends AppCompatActivity {
             setSupportActionBar(toolbar);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             adapter.showFilesInFolder(project.getId(), dataViewType, progressBar);
+        }
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        String newDate = new SimpleDateFormat("dd.MM.yyyy", Locale.US).format(new Date());
+        if(!lastViewedDate.equals(newDate)){
+            finish();
         }
     }
 
@@ -291,9 +306,13 @@ public class ProjectActivity extends AppCompatActivity {
         if (photoFile.exists()) {
             String filePath = photoFile.getPath();
             if (photoFile.delete()) {
-                Log.i(TAG, "deleteLocalImageFile: File was deleted: " + filePath);
+                if(BuildConfig.DEBUG) {
+                    Log.i(TAG, "deleteLocalImageFile: File was deleted: " + filePath);
+                }
             } else {
-                Log.e(TAG, "deleteLocalImageFile: File was not deleted: " + filePath);
+                if(BuildConfig.DEBUG) {
+                    Log.e(TAG, "deleteLocalImageFile: File was not deleted: " + filePath);
+                }
             }
         }
 

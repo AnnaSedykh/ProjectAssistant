@@ -1,4 +1,4 @@
-package com.annasedykh.projectassistant;
+package com.annasedykh.projectassistant.project;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -15,16 +15,19 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.annasedykh.projectassistant.R;
 import com.annasedykh.projectassistant.service.ProjectService;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.ProjectViewHolder> {
 
     private ProjectService service;
+    private Set<String> changedFilesIds;
     private List<ProjectFile> data = new ArrayList<>();
     private String dataViewType;
 
@@ -50,7 +53,11 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
     @Override
     public void onBindViewHolder(ProjectViewHolder holder, int position) {
         ProjectFile project = data.get(position);
-        holder.bind(project, position);
+        boolean hasChanges = false;
+        if (changedFilesIds != null) {
+            hasChanges = changedFilesIds.contains(project.getId());
+        }
+        holder.bind(project, hasChanges);
     }
 
     @Override
@@ -63,10 +70,11 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             data.sort(new ProjectFile.SortedByFolderAndName());
         }
+        changedFilesIds = service.getChangedFilesIds();
         notifyDataSetChanged();
     }
 
-    public void addProjectFile(ProjectFile projectFile){
+    public void addProjectFile(ProjectFile projectFile) {
         data.add(projectFile);
         notifyItemInserted(data.size());
     }
@@ -108,9 +116,11 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
 
         private final TextView text;
         private final ImageView image;
+        private final ImageView changes;
         private final Context context;
         private final ProjectService service;
         private ProgressBar progressBar;
+
 
         public ProjectViewHolder(View itemView, ProjectService service, ProgressBar progressBar) {
             this(itemView, service);
@@ -121,13 +131,21 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
             super(itemView);
             text = itemView.findViewById(R.id.file_title);
             image = itemView.findViewById(R.id.image);
+            changes = itemView.findViewById(R.id.changes);
             context = itemView.getContext();
             this.service = service;
         }
 
-        public void bind(final ProjectFile projectFile, final int position) {
+        public void bind(final ProjectFile projectFile, final boolean hasChanges) {
             if (text != null) {
                 text.setText(projectFile.getName());
+            }
+            if (changes != null) {
+                if (hasChanges) {
+                    changes.setVisibility(View.VISIBLE);
+                } else {
+                    changes.setVisibility(View.INVISIBLE);
+                }
             }
 
             switch (projectFile.getMimeType()) {
@@ -176,12 +194,16 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
                     int width = context.getResources().getDisplayMetrics().widthPixels;
                     int columns = ProjectActivity.COLUMN_NUMBER;
 
-                    Glide.with(context)
-                            .load(imageByteArray)
-                            .apply(new RequestOptions()
-                                    .centerCrop()
-                                    .override(width / columns, width / columns))
-                            .into(image);
+                    try {
+                        Glide.with(context)
+                                .load(imageByteArray)
+                                .apply(new RequestOptions()
+                                        .centerCrop()
+                                        .override(width / columns, width / columns))
+                                .into(image);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
                 if (progressBar != null) {
                     progressBar.setVisibility(View.GONE);
@@ -197,6 +219,9 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
                     projectIntent.putExtra(ProjectFile.PROJECT, projectFile);
                     projectIntent.putExtra("dataViewType", dataViewType);
                     context.startActivity(projectIntent);
+                    if (changes != null) {
+                        changes.setVisibility(View.INVISIBLE);
+                    }
                 }
             });
         }
@@ -209,6 +234,9 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
                     Intent viewIntent = new Intent(Intent.ACTION_VIEW);
                     viewIntent.setData(Uri.parse(url));
                     context.startActivity(viewIntent);
+                    if (changes != null) {
+                        changes.setVisibility(View.INVISIBLE);
+                    }
                 }
             });
         }

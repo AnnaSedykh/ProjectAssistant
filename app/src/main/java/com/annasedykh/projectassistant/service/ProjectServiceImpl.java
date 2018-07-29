@@ -2,10 +2,11 @@ package com.annasedykh.projectassistant.service;
 
 import android.accounts.Account;
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.annasedykh.projectassistant.BuildConfig;
-import com.annasedykh.projectassistant.ProjectFile;
 import com.annasedykh.projectassistant.R;
+import com.annasedykh.projectassistant.project.ProjectFile;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.common.Scopes;
@@ -13,23 +14,45 @@ import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.DateTime;
 import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.model.Change;
+import com.google.api.services.drive.model.ChangeList;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
+import com.google.api.services.drive.model.StartPageToken;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+
+import static android.content.Context.MODE_PRIVATE;
 
 public class ProjectServiceImpl implements ProjectService {
+
+    private static final String PREFS_NAME = "shared_prefs";
+    private static final String PAGE_TOKEN = "start_page_token";
+    private Set<String> changedFilesIds = new HashSet<>();
 
     private Drive driveService;
     private Context context;
 
     public ProjectServiceImpl(Context context) {
         this.context = context;
+    }
+
+    @Override
+    public Set<String> getChangedFilesIds() {
+        return changedFilesIds;
     }
 
     @Override
@@ -74,6 +97,9 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public File createFile(File fileMetadata, FileContent mediaContent) {
+        if (driveService == null) {
+            initDriveService();
+        }
         File file = null;
         try {
             file = driveService.files().create(fileMetadata, mediaContent)
@@ -83,6 +109,95 @@ public class ProjectServiceImpl implements ProjectService {
             e.printStackTrace();
         }
         return file;
+    }
+
+    @Override
+    public void receiveLastChanges() {
+        if (driveService == null) {
+            initDriveService();
+        }
+        changedFilesIds.clear();
+        Map<String, DateTime> changesMap = new HashMap<>();
+        if (!hasStartPageToken()) {
+            try {
+                StartPageToken response = driveService.changes()
+                        .getStartPageToken().execute();
+                saveStartPageToken(response.getStartPageToken());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        String pageToken = getStartPageToken();
+        while (pageToken != null) {
+            try {
+                ChangeList changes = driveService.changes()
+                        .list(pageToken)
+                        .setIncludeRemoved(false)
+                        .execute();
+
+                for (Change change : changes.getChanges()) {
+                    if (!context.getString(R.string.mime_type_folder).equals(change.getFile().getMimeType())) {
+                        changesMap.put(change.getFileId(), change.getTime());
+                    }
+                }
+
+                if (changes.getNewStartPageToken() != null) {
+                    // Last page, save this token for the next polling interval
+                    saveStartPageToken(changes.getNewStartPageToken());
+                }
+                pageToken = changes.getNextPageToken();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        resolveChanges(changesMap);
+    }
+
+    private void resolveChanges(Map<String, DateTime> changesMap) {
+        for (Map.Entry<String, DateTime> change : changesMap.entrySet()) {
+            String fileId = change.getKey();
+            long timeMillis = change.getValue().getValue();
+            String changeTimeString = getTimeStringWithoutSeconds(timeMillis);
+            try {
+                File file = getFileById(fileId);
+                DateTime modifiedTime = file.getModifiedTime();
+                String modifiedTimeString = getTimeStringWithoutSeconds(modifiedTime.getValue());
+                if (changeTimeString.equals(modifiedTimeString)) {
+                    changedFilesIds.add(file.getId());
+                    addParentsIds(file);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void addParentsIds(File file) throws IOException {
+        List<String> parents = file.getParents();
+        if (parents != null) {
+            boolean isCurrentProjectsFolder = parents.contains(context.getString(R.string.current_folder_id));
+            boolean isFinishedProjectsFolder = parents.contains(context.getString(R.string.finished_folder_id));
+            if (!isCurrentProjectsFolder && !isFinishedProjectsFolder) {
+                changedFilesIds.addAll(parents);
+                for (String parentId : parents) {
+                    File parentFile = getFileById(parentId);
+                    addParentsIds(parentFile);
+                }
+            }
+        }
+    }
+
+    private File getFileById(String fileId) throws IOException {
+        return driveService.files()
+                .get(fileId)
+                .setFields("id, parents, modifiedTime")
+                .execute();
+    }
+
+    private String getTimeStringWithoutSeconds(long dateMillis) {
+        Date date = new Date(dateMillis);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.US);
+        return simpleDateFormat.format(date);
     }
 
     private void initDriveService() {
@@ -98,5 +213,17 @@ public class ProjectServiceImpl implements ProjectService {
             ).setApplicationName(context.getString(R.string.app_name))
                     .build();
         }
+    }
+
+    private void saveStartPageToken(String token) {
+        context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit().putString(PAGE_TOKEN, token).apply();
+    }
+
+    private String getStartPageToken() {
+        return context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getString(PAGE_TOKEN, null);
+    }
+
+    private boolean hasStartPageToken() {
+        return !TextUtils.isEmpty(getStartPageToken());
     }
 }

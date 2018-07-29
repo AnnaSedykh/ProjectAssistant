@@ -1,4 +1,4 @@
-package com.annasedykh.projectassistant;
+package com.annasedykh.projectassistant.project;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -11,6 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
+import com.annasedykh.projectassistant.R;
+import com.annasedykh.projectassistant.app.App;
 import com.annasedykh.projectassistant.service.ProjectService;
 
 import butterknife.BindView;
@@ -20,7 +22,6 @@ import butterknife.Unbinder;
 public class ProjectsFragment extends Fragment {
     private static final String CURRENT_FOLDER_ID = "1G8ozUR7jyP3DOiU-it2sa1_4j-EYqxUB";
     private static final String FINISHED_FOLDER_ID = "1g1xmm-jbrVxiQZJv6myo0CMhsqILiKom";
-    private static final String TAG = "ProjectsFragment";
     public static final String TYPE_KEY = "type";
 
     private ProjectService projectService;
@@ -69,7 +70,11 @@ public class ProjectsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         recycler.setLayoutManager(new LinearLayoutManager(getContext()));
         recycler.setAdapter(projectAdapter);
+    }
 
+    @Override
+    public void onStart() {
+        super.onStart();
         loadProjectsData();
     }
 

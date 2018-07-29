@@ -10,6 +10,7 @@
     <string name="take_photo">Сделать фото</string>
     <string name="load_from_gallery">Загрузить из галереи</string>
     <string name="mime_type_jpeg">image/jpeg</string>
+    <string name="mime_type_folder">application/vnd.google-apps.folder</string>
     <string name="permission_storage_denied">Вы не дали разрешение для доступа к галерее</string>
     <string name="permission_camera_denied">Вы не дали разрешение для доступа к камере</string>
 
@@ -17,10 +18,12 @@
     <string name="tab_finished">Завершено</string>
     <string name="tab_accounting">Учет расходов</string>
 
+    <string name="current_folder_id">1G8ozUR7jyP3DOiU-it2sa1_4j-EYqxUB</string>
+    <string name="finished_folder_id">1g1xmm-jbrVxiQZJv6myo0CMhsqILiKom</string>
+
     <string-array name="tab_titles">
         <item>@string/tab_current</item>
         <item>@string/tab_finished</item>
-        <item>@string/tab_accounting</item>
     </string-array>
 
 </resources>
