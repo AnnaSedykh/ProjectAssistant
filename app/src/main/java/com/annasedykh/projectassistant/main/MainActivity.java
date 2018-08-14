@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String SIGN_IN = "sign in";
     private static final int SIGN_IN_CODE = 1;
     private static final int LOGOUT_CODE = 2;
+    private boolean isAccessRequestSent = false;
     private ProjectService projectService;
 
     @BindView(R.id.view_pager)
@@ -107,6 +108,14 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
         }
+    }
+
+    public boolean isAccessRequestSent() {
+        return isAccessRequestSent;
+    }
+
+    public void setAccessRequestSent(boolean accessRequestSent) {
+        isAccessRequestSent = accessRequestSent;
     }
 
     @SuppressLint("StaticFieldLeak")

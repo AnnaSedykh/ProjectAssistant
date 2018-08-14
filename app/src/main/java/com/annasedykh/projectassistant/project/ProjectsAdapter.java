@@ -1,12 +1,15 @@
 package com.annasedykh.projectassistant.project;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,9 +19,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.annasedykh.projectassistant.R;
+import com.annasedykh.projectassistant.main.CommonDialog;
+import com.annasedykh.projectassistant.main.MainActivity;
 import com.annasedykh.projectassistant.service.ProjectService;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +33,7 @@ import java.util.Set;
 
 public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.ProjectViewHolder> {
 
+    private static final String OWNER_ACCOUNT = "anna.emulator@gmail.com";
     private ProjectService service;
     private Set<String> changedFilesIds;
     private List<ProjectFile> data = new ArrayList<>();
@@ -90,7 +98,7 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
         private ProgressBar progressBar;
         private String folderId;
 
-        public ShowFilesInFolderTask(ProjectsAdapter adapter, ProgressBar progressBar, String folderId) {
+        ShowFilesInFolderTask(ProjectsAdapter adapter, ProgressBar progressBar, String folderId) {
             this.adapter = adapter;
             this.progressBar = progressBar;
             this.folderId = folderId;
@@ -107,6 +115,105 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
             progressBar.setVisibility(View.GONE);
         }
     }
+
+    public void showFilesInRootFolder(String folderId, String dataViewType,
+                                      ProgressBar progressBar, FragmentActivity currentActivity) {
+        this.dataViewType = dataViewType;
+        new ShowFilesInRootFolderTask(this, progressBar, folderId, currentActivity).execute();
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private class ShowFilesInRootFolderTask extends AsyncTask<String, Void, List<ProjectFile>> {
+        private ProjectsAdapter adapter;
+        private ProgressBar progressBar;
+        private String folderId;
+        private MainActivity mainActivity;
+
+        ShowFilesInRootFolderTask(ProjectsAdapter adapter, ProgressBar progressBar,
+                                  String folderId, FragmentActivity currentActivity) {
+            this.adapter = adapter;
+            this.progressBar = progressBar;
+            this.folderId = folderId;
+            this.mainActivity = (MainActivity) currentActivity;
+        }
+
+        @Override
+        protected List<ProjectFile> doInBackground(String... strings) {
+            return service.getFilesFromFolder(folderId);
+        }
+
+        @Override
+        protected void onPostExecute(List<ProjectFile> projects) {
+            adapter.setData(projects);
+            progressBar.setVisibility(View.GONE);
+
+            if (projects.isEmpty() && !mainActivity.isAccessRequestSent()) {
+
+                CommonDialog.show(
+                        mainActivity.getString(R.string.no_access_dialog),
+                        mainActivity.getString(R.string.request_access_msg),
+                        new NoAccessDialogListener(mainActivity),
+                        mainActivity.getSupportFragmentManager());
+                mainActivity.setAccessRequestSent(true);
+            }
+        }
+    }
+
+    private void sendAccessRequest(FragmentActivity currentActivity) {
+
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(currentActivity);
+        String email = account.getEmail();
+        String name = account.getDisplayName();
+        Intent i = new Intent(Intent.ACTION_SENDTO);
+        i.setType("message/rfc822");
+        i.setData(Uri.parse("mailto:"));
+        i.putExtra(Intent.EXTRA_EMAIL, new String[]{OWNER_ACCOUNT});
+        i.putExtra(Intent.EXTRA_SUBJECT, currentActivity.getString(R.string.request_access));
+        i.putExtra(Intent.EXTRA_TEXT, currentActivity.getString(R.string.email_text, email, name));
+        try {
+            currentActivity.startActivity(Intent.createChooser(i, currentActivity.getString(R.string.email_chooser)));
+
+            CommonDialog.show(currentActivity.getString(R.string.request_sent),
+                    currentActivity.getString(R.string.exit_msg),
+                    new CloseAppDialogListener(currentActivity),
+                    currentActivity.getSupportFragmentManager());
+        } catch (android.content.ActivityNotFoundException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private class NoAccessDialogListener implements DialogInterface.OnClickListener {
+        private FragmentActivity currentActivity;
+
+        NoAccessDialogListener(FragmentActivity currentActivity) {
+            this.currentActivity = currentActivity;
+        }
+
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            switch (which) {
+                case DialogInterface.BUTTON_POSITIVE:
+                    sendAccessRequest(currentActivity);
+            }
+        }
+    }
+
+    private class CloseAppDialogListener implements DialogInterface.OnClickListener {
+        private Activity currentActivity;
+
+        CloseAppDialogListener(Activity currentActivity) {
+            this.currentActivity = currentActivity;
+        }
+
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            switch (which) {
+                case DialogInterface.BUTTON_POSITIVE:
+                    currentActivity.finish();
+            }
+        }
+    }
+
 
     static class ProjectViewHolder extends RecyclerView.ViewHolder {
         private static final String OPEN_URL = "https://drive.google.com/open?id=";

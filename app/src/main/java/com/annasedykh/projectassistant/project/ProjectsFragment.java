@@ -20,8 +20,8 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
 public class ProjectsFragment extends Fragment {
-    private static final String CURRENT_FOLDER_ID = "1G8ozUR7jyP3DOiU-it2sa1_4j-EYqxUB";
-    private static final String FINISHED_FOLDER_ID = "1g1xmm-jbrVxiQZJv6myo0CMhsqILiKom";
+    public static final String CURRENT_FOLDER_ID = "1G8ozUR7jyP3DOiU-it2sa1_4j-EYqxUB";
+    public static final String FINISHED_FOLDER_ID = "1g1xmm-jbrVxiQZJv6myo0CMhsqILiKom";
     public static final String TYPE_KEY = "type";
 
     private ProjectService projectService;
@@ -87,10 +87,10 @@ public class ProjectsFragment extends Fragment {
     private void loadProjectsData() {
         switch (type) {
             case ProjectFile.TYPE_CURRENT:
-                projectAdapter.showFilesInFolder(CURRENT_FOLDER_ID, ProjectFile.LIST_VIEW, progressBar);
+                projectAdapter.showFilesInRootFolder(CURRENT_FOLDER_ID, ProjectFile.LIST_VIEW, progressBar, this.getActivity());
                 break;
             case ProjectFile.TYPE_FINISHED:
-                projectAdapter.showFilesInFolder(FINISHED_FOLDER_ID, ProjectFile.LIST_VIEW, progressBar);
+                projectAdapter.showFilesInRootFolder(FINISHED_FOLDER_ID, ProjectFile.LIST_VIEW, progressBar, this.getActivity());
         }
     }
 }
