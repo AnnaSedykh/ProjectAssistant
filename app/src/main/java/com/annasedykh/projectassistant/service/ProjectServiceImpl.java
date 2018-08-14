@@ -204,7 +204,7 @@ public class ProjectServiceImpl implements ProjectService {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         if (account != null) {
             GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(context, Collections.singleton(Scopes.DRIVE_FULL));
-            credential.setSelectedAccount(new Account(BuildConfig.APP_ACCOUNT_NAME, BuildConfig.APPLICATION_ID));
+            credential.setSelectedAccount(new Account(account.getEmail(), BuildConfig.APPLICATION_ID));
 
             driveService = new Drive.Builder(
                     AndroidHttp.newCompatibleTransport(),

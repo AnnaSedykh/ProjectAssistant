@@ -14,6 +14,14 @@
     <string name="permission_storage_denied">Вы не дали разрешение для доступа к галерее</string>
     <string name="permission_camera_denied">Вы не дали разрешение для доступа к камере</string>
 
+    <string name="no_access_dialog">У вас нет доступа к файлам проектов</string>
+    <string name="request_access_msg">Отправить запрос на открытие доступа?</string>
+    <string name="request_sent">Запрос отправлен</string>
+    <string name="exit_msg">Выйти из приложения?</string>
+    <string name="request_access">Запрос на доступ</string>
+    <string name="email_text">%s (%s) запрашивает доступ к файлам проектов</string>
+    <string name="email_chooser">Отправить запрос на доступ по почте…</string>
+
     <string name="tab_current">В работе</string>
     <string name="tab_finished">Завершено</string>
     <string name="tab_accounting">Учет расходов</string>
