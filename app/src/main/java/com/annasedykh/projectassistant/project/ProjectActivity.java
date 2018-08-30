@@ -292,7 +292,9 @@ public class ProjectActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(File file) {
-            if (file != null) {
+            if (file == null) {
+               adapter.requestPermission(ProjectsAdapter.WRITE_PERMISSION, ProjectActivity.this);
+            } else {
                 ProjectFile projectFile = new ProjectFile(file.getId(), photoFile.getName(), getString(R.string.mime_type_jpeg));
                 adapter.addProjectFile(projectFile);
             }

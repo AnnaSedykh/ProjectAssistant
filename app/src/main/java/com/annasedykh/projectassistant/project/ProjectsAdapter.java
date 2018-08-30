@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.annasedykh.projectassistant.R;
 import com.annasedykh.projectassistant.main.CommonDialog;
@@ -34,6 +36,9 @@ import java.util.Set;
 public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.ProjectViewHolder> {
 
     private static final String OWNER_ACCOUNT = "anna.emulator@gmail.com";
+    static final String READ_PERMISSION = "request read permission";
+    static final String WRITE_PERMISSION = "request write permission";
+
     private ProjectService service;
     private Set<String> changedFilesIds;
     private List<ProjectFile> data = new ArrayList<>();
@@ -147,53 +152,76 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
             adapter.setData(projects);
             progressBar.setVisibility(View.GONE);
 
-            if (projects.isEmpty() && !mainActivity.isAccessRequestSent()) {
-
-                CommonDialog.show(
-                        mainActivity.getString(R.string.no_access_dialog),
-                        mainActivity.getString(R.string.request_access_msg),
-                        new NoAccessDialogListener(mainActivity),
-                        mainActivity.getSupportFragmentManager());
-                mainActivity.setAccessRequestSent(true);
+            if (projects.isEmpty()) {
+                if (!mainActivity.isAccessRequestSent()) {
+                    requestPermission(READ_PERMISSION, mainActivity);
+                    mainActivity.setAccessRequestSent(true);
+                } else {
+                    Toast.makeText(mainActivity, mainActivity.getString(R.string.still_no_permission_msg), Toast.LENGTH_LONG).show();
+                }
             }
         }
     }
 
-    private void sendAccessRequest(FragmentActivity currentActivity) {
+    void requestPermission(String permissionType, AppCompatActivity activity) {
+        switch (permissionType) {
+            case READ_PERMISSION:
+                CommonDialog.show(
+                        activity.getString(R.string.no_read_permission_dialog),
+                        activity.getString(R.string.request_permission_msg),
+                        new NoAccessDialogListener(activity, activity.getString(R.string.email_text_read_access), permissionType),
+                        activity.getSupportFragmentManager());
+                break;
+            case WRITE_PERMISSION:
+                CommonDialog.show(
+                        activity.getString(R.string.no_write_permission_dialog),
+                        activity.getString(R.string.request_permission_msg),
+                        new NoAccessDialogListener(activity, activity.getString(R.string.email_text_write_access), permissionType),
+                        activity.getSupportFragmentManager());
+        }
+    }
+
+    private void sendAccessRequest(AppCompatActivity currentActivity, String emailText, String permissionType) {
 
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(currentActivity);
         String email = account.getEmail();
         String name = account.getDisplayName();
-        Intent i = new Intent(Intent.ACTION_SENDTO);
-        i.setType("message/rfc822");
-        i.setData(Uri.parse("mailto:"));
-        i.putExtra(Intent.EXTRA_EMAIL, new String[]{OWNER_ACCOUNT});
-        i.putExtra(Intent.EXTRA_SUBJECT, currentActivity.getString(R.string.request_access));
-        i.putExtra(Intent.EXTRA_TEXT, currentActivity.getString(R.string.email_text, email, name));
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setType("message/rfc822");
+        intent.setData(Uri.parse("mailto:"));
+        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{OWNER_ACCOUNT});
+        intent.putExtra(Intent.EXTRA_SUBJECT, currentActivity.getString(R.string.request_permission));
+        intent.putExtra(Intent.EXTRA_TEXT, currentActivity.getString(R.string.email_template, email, name, emailText));
         try {
-            currentActivity.startActivity(Intent.createChooser(i, currentActivity.getString(R.string.email_chooser)));
+            currentActivity.startActivity(Intent.createChooser(intent, currentActivity.getString(R.string.email_chooser)));
 
-            CommonDialog.show(currentActivity.getString(R.string.request_sent),
-                    currentActivity.getString(R.string.exit_msg),
-                    new CloseAppDialogListener(currentActivity),
-                    currentActivity.getSupportFragmentManager());
+            if (READ_PERMISSION.equals(permissionType)) {
+                CommonDialog.show(currentActivity.getString(R.string.request_sent),
+                        currentActivity.getString(R.string.exit_msg),
+                        new CloseAppDialogListener(currentActivity),
+                        currentActivity.getSupportFragmentManager());
+            }
         } catch (android.content.ActivityNotFoundException ex) {
             ex.printStackTrace();
         }
     }
 
     private class NoAccessDialogListener implements DialogInterface.OnClickListener {
-        private FragmentActivity currentActivity;
+        private AppCompatActivity currentActivity;
+        private String emailText;
+        private String permissionType;
 
-        NoAccessDialogListener(FragmentActivity currentActivity) {
+        public NoAccessDialogListener(AppCompatActivity currentActivity, String emailText, String permissionType) {
             this.currentActivity = currentActivity;
+            this.emailText = emailText;
+            this.permissionType = permissionType;
         }
 
         @Override
         public void onClick(DialogInterface dialog, int which) {
             switch (which) {
                 case DialogInterface.BUTTON_POSITIVE:
-                    sendAccessRequest(currentActivity);
+                    sendAccessRequest(currentActivity, emailText, permissionType);
             }
         }
     }
