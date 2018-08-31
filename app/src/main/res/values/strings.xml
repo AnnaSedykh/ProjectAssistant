@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Project Assistant</string>
-    <string name="main_screen_title">Project Assistant</string>
+    <string name="main_screen_title">Проектная документация</string>
 
     <string name="ok">Да</string>
     <string name="cancel">Отмена</string>

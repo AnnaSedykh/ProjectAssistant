@@ -5,6 +5,10 @@ import android.os.Parcelable;
 
 import java.util.Comparator;
 
+/**
+ * {@link ProjectFile} is a project file model class.
+ * Contains information related to a single file.
+ */
 public class ProjectFile implements Parcelable {
     public static final String PROJECT = "project";
     public static final String PHOTO_RU = "фото";
@@ -17,8 +21,11 @@ public class ProjectFile implements Parcelable {
     public static final String TYPE_FINISHED = "1";
     public static final String TYPE_UNKNOWN = "-1";
 
+    /** File id */
     private String id;
+    /** File name */
     private String name;
+    /** File mimeType */
     private String mimeType;
 
 

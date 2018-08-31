@@ -9,6 +9,9 @@ import com.annasedykh.projectassistant.R;
 import com.annasedykh.projectassistant.project.ProjectFile;
 import com.annasedykh.projectassistant.project.ProjectsFragment;
 
+/**
+ * {@link MainPagerAdapter} creates fragments for current and finished project tabs.
+ */
 public class MainPagerAdapter extends FragmentPagerAdapter {
 
     public static final int PAGE_CURRENT = 0;

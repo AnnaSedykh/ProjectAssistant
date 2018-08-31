@@ -23,6 +23,9 @@ import com.annasedykh.projectassistant.service.ProjectService;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+/**
+ * {@link MainActivity} shows 2 tabs with current and finished project folders
+ */
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
@@ -30,8 +33,11 @@ public class MainActivity extends AppCompatActivity {
     public static final String SIGN_IN = "sign in";
     private static final int SIGN_IN_CODE = 1;
     private static final int LOGOUT_CODE = 2;
-    private boolean isAccessRequestSent = false;
     private ProjectService projectService;
+    /**
+     * true if read permission request was sent
+     */
+    private boolean isAccessRequestSent = false;
 
     @BindView(R.id.view_pager)
     ViewPager viewPager;
@@ -51,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         Intent signInIntent = new Intent(this, AuthActivity.class);
         signInIntent.putExtra(SIGN_IN, true);
         startActivityForResult(signInIntent, SIGN_IN_CODE);
-        projectService = ((App)getApplication()).getProjectService();
+        projectService = ((App) getApplication()).getProjectService();
     }
 
     @Override
@@ -89,11 +95,11 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case SIGN_IN_CODE:
                 if (resultCode == RESULT_OK) {
-                    if(BuildConfig.DEBUG) {
+                    if (BuildConfig.DEBUG) {
                         Log.i(TAG, "Signed in successfully");
                     }
                 } else {
-                    if(BuildConfig.DEBUG) {
+                    if (BuildConfig.DEBUG) {
                         Log.i(TAG, "Sign in failed");
                     }
                     finish();
@@ -101,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case LOGOUT_CODE:
                 if (resultCode == RESULT_OK) {
-                    if(BuildConfig.DEBUG) {
+                    if (BuildConfig.DEBUG) {
                         Log.i(TAG, "Logout successful");
                     }
                     finish();
@@ -118,6 +124,9 @@ public class MainActivity extends AppCompatActivity {
         isAccessRequestSent = accessRequestSent;
     }
 
+    /**
+     * Task to receive last changes asynchronously
+     */
     @SuppressLint("StaticFieldLeak")
     private class ReceiveChangesTask extends AsyncTask<Void, Void, Void> {
         @Override
@@ -127,6 +136,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * {@link LogoutDialogListener} starts logout activity or dismiss.
+     */
     public class LogoutDialogListener implements DialogInterface.OnClickListener {
         @Override
         public void onClick(DialogInterface dialog, int which) {

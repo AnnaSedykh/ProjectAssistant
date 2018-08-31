@@ -33,6 +33,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * {@link ProjectsAdapter} displays a scrolling list of {@link ProjectFile} objects using RecyclerView.
+ */
 public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.ProjectViewHolder> {
 
     private static final String OWNER_ACCOUNT = "anna.emulator@gmail.com";
@@ -48,6 +51,9 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
         this.service = service;
     }
 
+    /**
+     * Create new views (invoked by the layout manager).
+     */
     @NonNull
     @Override
     public ProjectsAdapter.ProjectViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -63,6 +69,9 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
         return new ProjectViewHolder(view, service);
     }
 
+    /**
+     * Replace the contents of a view (invoked by the layout manager).
+     */
     @Override
     public void onBindViewHolder(ProjectViewHolder holder, int position) {
         ProjectFile project = data.get(position);
@@ -73,11 +82,17 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
         holder.bind(project, hasChanges);
     }
 
+    /**
+     * Return the size of project file's dataset (invoked by the layout manager)
+     */
     @Override
     public int getItemCount() {
         return data.size();
     }
 
+    /**
+     * Set data with last changes
+     */
     public void setData(List<ProjectFile> data) {
         this.data = data;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -92,11 +107,17 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
         notifyItemInserted(data.size());
     }
 
+    /**
+     * Starts async task to show files in selected folder
+     */
     public void showFilesInFolder(String folderId, String dataViewType, ProgressBar progressBar) {
         this.dataViewType = dataViewType;
         new ShowFilesInFolderTask(this, progressBar, folderId).execute();
     }
 
+    /**
+     * Task requests for project files in selected folder and display them to user.
+     */
     @SuppressLint("StaticFieldLeak")
     private class ShowFilesInFolderTask extends AsyncTask<String, Void, List<ProjectFile>> {
         private ProjectsAdapter adapter;
@@ -121,12 +142,20 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
         }
     }
 
+    /**
+     * Starts async task to show files in root folder
+     */
     public void showFilesInRootFolder(String folderId, String dataViewType,
                                       ProgressBar progressBar, FragmentActivity currentActivity) {
         this.dataViewType = dataViewType;
         new ShowFilesInRootFolderTask(this, progressBar, folderId, currentActivity).execute();
     }
 
+    /**
+     * Task requests for project files in root folder.
+     * If success - update UI to display them to user.
+     * If failed - request for read permission via email.
+     */
     @SuppressLint("StaticFieldLeak")
     private class ShowFilesInRootFolderTask extends AsyncTask<String, Void, List<ProjectFile>> {
         private ProjectsAdapter adapter;
@@ -163,6 +192,9 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
         }
     }
 
+    /**
+     * Shows no permission dialog.
+     */
     void requestPermission(String permissionType, AppCompatActivity activity) {
         switch (permissionType) {
             case READ_PERMISSION:
@@ -181,6 +213,9 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
         }
     }
 
+    /**
+     * Starts activity to send email asking permission to view project files or load photos on Google Drive.
+     */
     private void sendAccessRequest(AppCompatActivity currentActivity, String emailText, String permissionType) {
 
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(currentActivity);
@@ -206,6 +241,9 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
         }
     }
 
+    /**
+     * Send access request on OK button click
+     */
     private class NoAccessDialogListener implements DialogInterface.OnClickListener {
         private AppCompatActivity currentActivity;
         private String emailText;
@@ -226,6 +264,9 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
         }
     }
 
+    /**
+     * Finish activity on OK button click
+     */
     private class CloseAppDialogListener implements DialogInterface.OnClickListener {
         private Activity currentActivity;
 
@@ -242,7 +283,9 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
         }
     }
 
-
+    /**
+     * {@link ProjectViewHolder} provide a reference to the views for each project file
+     */
     static class ProjectViewHolder extends RecyclerView.ViewHolder {
         private static final String OPEN_URL = "https://drive.google.com/open?id=";
         private static final String MIME_TYPE_FOLDER = "application/vnd.google-apps.folder";
@@ -257,12 +300,12 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
         private ProgressBar progressBar;
 
 
-        public ProjectViewHolder(View itemView, ProjectService service, ProgressBar progressBar) {
+        ProjectViewHolder(View itemView, ProjectService service, ProgressBar progressBar) {
             this(itemView, service);
             this.progressBar = progressBar;
         }
 
-        public ProjectViewHolder(View itemView, ProjectService service) {
+        ProjectViewHolder(View itemView, ProjectService service) {
             super(itemView);
             text = itemView.findViewById(R.id.file_title);
             image = itemView.findViewById(R.id.image);
@@ -271,7 +314,10 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
             this.service = service;
         }
 
-        public void bind(final ProjectFile projectFile, final boolean hasChanges) {
+        /**
+         * Binds view with project file
+         */
+        void bind(final ProjectFile projectFile, final boolean hasChanges) {
             if (text != null) {
                 text.setText(projectFile.getName());
             }
@@ -283,6 +329,7 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
                 }
             }
 
+            //Set image icon and click listener according to file mime type
             switch (projectFile.getMimeType()) {
                 case MIME_TYPE_FOLDER:
                     String nameLowCase = projectFile.getName().toLowerCase();
@@ -308,6 +355,9 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
             }
         }
 
+        /**
+         * Task loads photo from Google Drive by id and displays it as ImageView.
+         */
         @SuppressLint("StaticFieldLeak")
         private class ShowPhotoTask extends AsyncTask<String, Void, byte[]> {
             private String photoId;
@@ -346,6 +396,9 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
             }
         }
 
+        /**
+         * Start ProjectActivity on item click.
+         */
         private void startProjectActivityOnClick(final ProjectFile projectFile, final String dataViewType) {
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -361,6 +414,9 @@ public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.Projec
             });
         }
 
+        /**
+         * Start view in browser activity on item click.
+         */
         private void startViewInBrowserOnClick(final ProjectFile projectFile) {
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

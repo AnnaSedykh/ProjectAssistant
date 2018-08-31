@@ -18,6 +18,9 @@ import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+/**
+ * {@link AuthActivity} is used to sign in to Google account and logout.
+ */
 public class AuthActivity extends AppCompatActivity {
 
     private static final String TAG = "AuthActivity";
@@ -79,6 +82,9 @@ public class AuthActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Sign out from account and finish activity.
+     */
     private void logout() {
         if (BuildConfig.DEBUG) {
             Log.i(TAG, "Start logout");
@@ -92,6 +98,9 @@ public class AuthActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * {@link ExitDialogListener} finishes the app or starts sign in activity again.
+     */
     private class ExitDialogListener implements DialogInterface.OnClickListener {
         @Override
         public void onClick(DialogInterface dialog, int which) {
