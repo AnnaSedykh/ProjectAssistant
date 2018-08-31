@@ -37,6 +37,9 @@ import java.util.Set;
 
 import static android.content.Context.MODE_PRIVATE;
 
+/**
+ * {@link ProjectServiceImpl} implementation of {@link ProjectService} for working with Google Drive REST API.
+ */
 public class ProjectServiceImpl implements ProjectService {
 
     private static final String PREFS_NAME = "shared_prefs";
@@ -50,11 +53,20 @@ public class ProjectServiceImpl implements ProjectService {
         this.context = context;
     }
 
+    /**
+     * Get last changes as set of changed files id's
+     * @return set of changed files id's
+     */
     @Override
     public Set<String> getChangedFilesIds() {
         return changedFilesIds;
     }
 
+    /**
+     * Requests for project files in selected folder.
+     * @param folderId - selected folder id
+     * @return list of ProjectFile objects
+     */
     @Override
     public List<ProjectFile> getFilesFromFolder(String folderId) {
         if (driveService == null) {
@@ -77,6 +89,11 @@ public class ProjectServiceImpl implements ProjectService {
         return projects;
     }
 
+    /**
+     * Requests for a single file by id.
+     * @param fileId - selected file id
+     * @return file as byte array
+     */
     @Override
     public byte[] getFileAsByteArray(String fileId) {
         if (driveService == null) {
@@ -95,6 +112,12 @@ public class ProjectServiceImpl implements ProjectService {
         return null;
     }
 
+    /**
+     * Creates file on Google Drive.
+     * @param fileMetadata - file metadata
+     * @param mediaContent - file media content
+     * @return File object of created file.
+     */
     @Override
     public File createFile(File fileMetadata, FileContent mediaContent) {
         if (driveService == null) {
@@ -111,12 +134,16 @@ public class ProjectServiceImpl implements ProjectService {
         return file;
     }
 
+    /**
+     * Receive last changes of files from Google Drive.
+     */
     @Override
     public void receiveLastChanges() {
         if (driveService == null) {
             initDriveService();
         }
         changedFilesIds.clear();
+        // save changed file id with it's changes time
         Map<String, DateTime> changesMap = new HashMap<>();
         if (!hasStartPageToken()) {
             try {
@@ -153,6 +180,11 @@ public class ProjectServiceImpl implements ProjectService {
         resolveChanges(changesMap);
     }
 
+    /**
+     * If file's changes time equals modified time - this file was modified, not only viewed.
+     * Add this file id to list of changed files
+     * @param changesMap - map with pairs of changed file id - file changes time
+     */
     private void resolveChanges(Map<String, DateTime> changesMap) {
         for (Map.Entry<String, DateTime> change : changesMap.entrySet()) {
             String fileId = change.getKey();
@@ -172,6 +204,11 @@ public class ProjectServiceImpl implements ProjectService {
         }
     }
 
+    /**
+     * Recursively add all file parents ids to list of changed files
+     * @param file - current file
+     * @throws IOException - If a file could not be found
+     */
     private void addParentsIds(File file) throws IOException {
         List<String> parents = file.getParents();
         if (parents != null) {
@@ -187,6 +224,11 @@ public class ProjectServiceImpl implements ProjectService {
         }
     }
 
+    /**
+     * Requests for a single file by id.
+     * @param fileId - selected file id
+     * @return file as File object
+     */
     private File getFileById(String fileId) throws IOException {
         return driveService.files()
                 .get(fileId)
@@ -194,12 +236,20 @@ public class ProjectServiceImpl implements ProjectService {
                 .execute();
     }
 
+    /**
+     * Round date time to minutes
+     * @param dateMillis - date as millis
+     * @return formatted date string
+     */
     private String getTimeStringWithoutSeconds(long dateMillis) {
         Date date = new Date(dateMillis);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.US);
         return simpleDateFormat.format(date);
     }
 
+    /**
+     * Init Google Drive service
+     */
     private void initDriveService() {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         if (account != null) {
@@ -215,6 +265,9 @@ public class ProjectServiceImpl implements ProjectService {
         }
     }
 
+    /**
+     * Save start page token in shared prefs for the next polling interval
+     */
     private void saveStartPageToken(String token) {
         context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit().putString(PAGE_TOKEN, token).apply();
     }

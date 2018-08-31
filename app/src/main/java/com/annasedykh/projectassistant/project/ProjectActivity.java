@@ -44,6 +44,9 @@ import java.util.Locale;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+/**
+ * {@link ProjectActivity} displays a scrolling list of {@link ProjectFile} objects using RecyclerView.
+ */
 public class ProjectActivity extends AppCompatActivity {
     private static final String TAG = "ProjectActivity";
     public static final int COLUMN_NUMBER = 3;
@@ -106,7 +109,7 @@ public class ProjectActivity extends AppCompatActivity {
     protected void onRestart() {
         super.onRestart();
         String newDate = new SimpleDateFormat("dd.MM.yyyy", Locale.US).format(new Date());
-        if(!lastViewedDate.equals(newDate)){
+        if (!lastViewedDate.equals(newDate)) {
             finish();
         }
     }
@@ -120,6 +123,12 @@ public class ProjectActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+
+    /**
+     * In photo folder user can choose options in special menu:
+     * 1. Take photo and download it to Google Drive without saving it on phone storage.
+     * 2. Choose multiple photos from phone gallery and download them to Google Drive.
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         if (dataViewType.equals(ProjectFile.PHOTO_VIEW)) {
@@ -187,6 +196,10 @@ public class ProjectActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Checks granted permission or requests it.
+     * Then start activity to choose multiple photos from phone gallery.
+     */
     private void loadFromGallery() {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -203,6 +216,9 @@ public class ProjectActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Get file path from uri
+     */
     private static String getRealPathFromURI(Context context, Uri uri) {
         String[] filePathColumn = {MediaStore.Images.Media.DATA};
         Cursor cursor = context.getContentResolver().query(uri, filePathColumn, null, null, null);
@@ -214,6 +230,9 @@ public class ProjectActivity extends AppCompatActivity {
         return filePath;
     }
 
+    /**
+     * Checks granted permission or requests it. Then start activity to choose photos from phone gallery.
+     */
     private void takePhoto() {
         Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)
@@ -244,6 +263,12 @@ public class ProjectActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Creates a new empty file in the specified directory.
+     *
+     * @return An abstract pathname denoting a newly-created empty file
+     * @throws IOException If a file could not be created
+     */
     private java.io.File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = DateFormat.getDateTimeInstance().format(new Date());
@@ -257,6 +282,9 @@ public class ProjectActivity extends AppCompatActivity {
         return imageFile;
     }
 
+    /**
+     * Starts async task to create photo file on Google Drive.
+     */
     private void createFileOnDrive(java.io.File photoFile, boolean deleteAfterLoad) {
         File fileMetadata = new File();
         fileMetadata.setName(photoFile.getName());
@@ -271,6 +299,11 @@ public class ProjectActivity extends AppCompatActivity {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
+    /**
+     * Task to create photo file on Google Drive.
+     * If success - update UI to show new photo and delete local image if needed.
+     * If failed - request for write permission via email.
+     */
     @SuppressLint("StaticFieldLeak")
     private class CreateFileTask extends AsyncTask<Void, Void, File> {
         private File fileMetadata;
@@ -293,7 +326,7 @@ public class ProjectActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(File file) {
             if (file == null) {
-               adapter.requestPermission(ProjectsAdapter.WRITE_PERMISSION, ProjectActivity.this);
+                adapter.requestPermission(ProjectsAdapter.WRITE_PERMISSION, ProjectActivity.this);
             } else {
                 ProjectFile projectFile = new ProjectFile(file.getId(), photoFile.getName(), getString(R.string.mime_type_jpeg));
                 adapter.addProjectFile(projectFile);
@@ -308,11 +341,11 @@ public class ProjectActivity extends AppCompatActivity {
         if (photoFile.exists()) {
             String filePath = photoFile.getPath();
             if (photoFile.delete()) {
-                if(BuildConfig.DEBUG) {
+                if (BuildConfig.DEBUG) {
                     Log.i(TAG, "deleteLocalImageFile: File was deleted: " + filePath);
                 }
             } else {
-                if(BuildConfig.DEBUG) {
+                if (BuildConfig.DEBUG) {
                     Log.e(TAG, "deleteLocalImageFile: File was not deleted: " + filePath);
                 }
             }

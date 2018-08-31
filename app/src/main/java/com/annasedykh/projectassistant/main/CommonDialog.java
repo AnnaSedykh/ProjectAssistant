@@ -10,6 +10,9 @@ import android.support.v7.app.AlertDialog;
 
 import com.annasedykh.projectassistant.R;
 
+/**
+ * {@link CommonDialog} custom dialog with OK and cancel buttons.
+ */
 public class CommonDialog extends DialogFragment {
 
     private DialogInterface.OnClickListener listener;
@@ -40,6 +43,9 @@ public class CommonDialog extends DialogFragment {
         return dialog;
     }
 
+    /**
+     * Method sets title, message and custom OnClickListener for dialog and shows it on the screen.
+     */
     public static void show(String title, String message, DialogInterface.OnClickListener listener, FragmentManager fragmentManager) {
         CommonDialog dialog = new CommonDialog();
         Bundle args = new Bundle();
