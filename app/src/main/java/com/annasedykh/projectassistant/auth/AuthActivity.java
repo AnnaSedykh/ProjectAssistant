@@ -63,6 +63,7 @@ public class AuthActivity extends AppCompatActivity {
         GoogleSignInOptions signInOptions =
                 new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                         .requestScopes(new Scope(Scopes.DRIVE_FULL))
+                        .requestEmail()
                         .build();
         return GoogleSignIn.getClient(this, signInOptions);
     }
