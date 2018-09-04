@@ -38,7 +38,7 @@ import java.util.Set;
  */
 public class ProjectsAdapter extends RecyclerView.Adapter<ProjectsAdapter.ProjectViewHolder> {
 
-    private static final String OWNER_ACCOUNT = "anna.emulator@gmail.com";
+    private static final String OWNER_ACCOUNT = "project.fcrcompany@gmail.com";
     static final String READ_PERMISSION = "request read permission";
     static final String WRITE_PERMISSION = "request write permission";
 

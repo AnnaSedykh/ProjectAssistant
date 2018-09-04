@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Project Assistant</string>
+    <string name="app_name">FCR Project Assistant</string>
     <string name="main_screen_title">Проектная документация</string>
 
     <string name="ok">Да</string>
@@ -30,8 +30,8 @@
     <string name="tab_finished">Завершено</string>
     <string name="tab_accounting">Учет расходов</string>
 
-    <string name="current_folder_id">1G8ozUR7jyP3DOiU-it2sa1_4j-EYqxUB</string>
-    <string name="finished_folder_id">1g1xmm-jbrVxiQZJv6myo0CMhsqILiKom</string>
+    <string name="current_folder_id">186qaihu3o1ykYDjtiTPuCQhiJlGYXmOc</string>
+    <string name="finished_folder_id">1Tvpw7bNyrqwn_3IrucvaziofWswQRISe</string>
 
     <string-array name="tab_titles">
         <item>@string/tab_current</item>

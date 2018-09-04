@@ -53,7 +53,11 @@ public class CommonDialog extends DialogFragment {
         args.putString("message", message);
         dialog.setArguments(args);
         dialog.setListener(listener);
-        dialog.show(fragmentManager, "CommonDialog");
+        try {
+            dialog.show(fragmentManager, "CommonDialog");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 }
